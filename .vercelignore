@@ -1,0 +1,9 @@
+# keep the function bundle small - none of this is needed at runtime
+planning/
+*.pdf
+*.mp3
+gui.html.bak
+scripts/
+supabase/
+.DS_Store
+/gui.html

@@ -1,0 +1,14 @@
+.env
+.env.*
+.vercel
+__pycache__/
+.DS_Store
+
+# personal / course material - not part of the deliverable
+/planning
+/spec.pdf
+
+# backups and generated leftovers
+*.bak
+*.orig
+/gui.html.bak
