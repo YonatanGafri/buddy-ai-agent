@@ -116,29 +116,40 @@ Every turn costs money. Call a tool when you need what it holds, not by habit.""
 # version used youtube.com and ynet.co.il and the model simply echoed the
 # matching example back - including a claim it had "nudged twice already" that it
 # had never checked. Examples teach shape and method; overlap with real input
-# turns them into a lookup table.
+# turns them into a lookup table. reddit.com and arxiv.org were in here for the
+# same reason and had to go: a pasted r/aww link came back with this file's
+# message almost word for word, and no tool call.
+#
+# The memory writes below record only what the agent DID - a count, a time, what
+# a callback is for. They deliberately do not restate the deadline that prompted
+# them. An earlier version opened every write with "Databases midterm tomorrow",
+# and that sentence ended up in the real database, where the agent read it back
+# as its own note and told a student about an exam that does not exist. Context
+# is re-readable through a tool; a nudge count is not. Only the second kind
+# belongs in memory, and keeping facts out of these strings means there is
+# nothing here worth copying.
 FEW_SHOT = [
     # 1. Reads context, then allows on-task browsing.
-    {"role": "user", "content": "Opened arxiv.org - 'attention is all you need'"},
+    {"role": "user", "content": "Opened jstor.org - 'kinship structures in highland burma'"},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_memory","args":{"scope":"short"}}'},
-    {"role": "user", "content": '{"content":"Working on the transformers seminar paper, due Thursday.","updated_at":"2026-08-02T09:10:00Z"}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"arxiv.org"}'},
+    {"role": "user", "content": '{"content":"Working on the anthropology seminar paper.","updated_at":"2026-08-02T09:10:00Z"}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"jstor.org"}'},
 
     # 2. Checks the calendar, then nudges, recording the count and the pending
     #    check in one write before the decision.
     {"role": "user", "content": "Opened twitch.tv - 'valorant ranked grind'"},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_calendar","args":{}}'},
-    {"role": "user", "content": '{"weekly_events":[{"date":"2026-08-03","title":"Databases midterm"}]}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Databases midterm tomorrow. Nudged twitch.tv 1x at 14:58 - check in 5 min whether they left."}}'},
+    {"role": "user", "content": '{"weekly_events":[{"date":"2026-08-03","title":"Ecology midterm"}]}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged twitch.tv 1x at 14:58 - check in 5 min whether they left."}}'},
     {"role": "user", "content": '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"Midterm is tomorrow and normalization still is not clicking. Half an hour on it, then the grind?","callback":300}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"That midterm is tomorrow and the notes are still untouched. Half an hour on it, then the grind?","callback":300}'},
 
     # 3. Wake - the prompt says only that the timer fired. Everything it needs
     #    it wrote itself in example 2, and reads back here before escalating.
     {"role": "user", "content": "Waking up - you asked to check back."},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_memory","args":{"scope":"short"}}'},
-    {"role": "user", "content": '{"content":"Databases midterm tomorrow. Nudged twitch.tv 2x - still there both times.","updated_at":"2026-08-02T15:04:00Z"}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"twitch.tv","message":"Twice I have asked. Midterm is tomorrow - closing this one. Come find me when the notes are done."}'},
+    {"role": "user", "content": '{"content":"Nudged twitch.tv 2x - still there both times.","updated_at":"2026-08-02T15:04:00Z"}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"twitch.tv","message":"Twice I have asked, and you are still here. Closing this one - come find me when the notes are done."}'},
 
     # 4. Hebrew tab gets a Hebrew message.
     {"role": "user", "content": "Opened walla.co.il - 'ספורט'"},
@@ -146,10 +157,10 @@ FEW_SHOT = [
 
     # 5. What a person actually types: no "Opened", a pasted URL, no title. Sets
     #    a callback, so it writes what the callback is for first.
-    {"role": "user", "content": "im on https://www.Reddit.com/r/aww/top/?t=day lol"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Databases midterm tomorrow. Nudged reddit.com 1x at 15:20 - callback at 15:30, check if they are still there."}}'},
+    {"role": "user", "content": "im on https://www.Pinterest.com/search/pins/?q=desk%20setup lol"},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged pinterest.com 1x at 15:20 - callback at 15:30, check if they are still there."}}'},
     {"role": "user", "content": '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"reddit.com","message":"Top of r/aww is a 40-minute hole and you know it. Set a timer?","callback":600}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"Desk setup inspiration is a 40-minute hole and you know it. Set a timer?","callback":600}'},
 
     # 6. No browsing event - error immediately, no tool calls to pad it out.
     {"role": "user", "content": "how many days until the exam?"},
