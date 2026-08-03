@@ -125,7 +125,13 @@ def run(prompt: str) -> tuple[dict, list]:
             "response": result,
         })
 
+        # Labelled, because the role cannot distinguish it. A tool result and the
+        # student both arrive as "user" - so an unlabelled {"ok":true} is the
+        # last thing the model sees, and it answers that instead of the prompt.
+        # One live trace returned "No browsing tab here" for a prompt reading
+        # "opened youtube.com": two writes had buried it under two bare acks.
         messages = messages + [
             {"role": "assistant", "content": raw},
-            {"role": "user", "content": json.dumps(result, ensure_ascii=False)[:4000]},
+            {"role": "user", "content": prompts.observation(
+                json.dumps(result, ensure_ascii=False)[:4000])},
         ]
