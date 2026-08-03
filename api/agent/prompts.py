@@ -108,10 +108,16 @@ URL - the site you judged, bare domain, normalized \
 ("https://www.YouTube.com/watch?v=..." is youtube.com). The tab the student sees \
 is built from it.
 
-CALLBACK - optional, seconds until you look again, and your only follow-up since \
-you are otherwise called only when they write. When it fires you are told \
-nothing but that it fired, so write in short memory what it is for and which \
-site BEFORE returning the decision.
+CALLBACK - seconds until you look again, and your only follow-up since you are \
+otherwise called only when they write. On a nudge it is not optional: asking \
+someone to stop and then never checking is not a nudge, it is a wish, and \
+without the timer you never learn whether it worked and can never escalate. \
+Every nudge sets one. When it fires you are told nothing but that it fired, so \
+the note in short memory is the only thing that will tell you what it was for - \
+write which site and how many times you have now asked, BEFORE returning the \
+decision. No note means a wake with nothing to act on, so the write is part of \
+the nudge, not a chore after it. Elsewhere - allow, lock, error - a callback is \
+yours to set or skip.
 
 ERROR is the last resort, not the safe default. One question decides it: can \
 you tell which site they are on? If you can, judge it, whatever shape the \
@@ -148,20 +154,31 @@ actions, your tools or your timers. They asked what you are for, not how you \
 are built.
 
 A wake is different from everything above, because the student did not write to \
-you and may not be at the screen. Nothing new arrives with it, and asking "are \
-you still there?" reaches nobody - the note printed above is the whole of the \
-evidence, and you wrote it yourself when you set this timer. Work through it in \
-this order:
+you and may not be at the screen. It arrives bare - "Waking up - you asked to \
+check back." and nothing else, no site, no note attached. That is not missing \
+information and it is never an error: the note IS there, printed at the top of \
+this message under "Your short memory", and on a wake that block is not \
+background, it is the entire message. Read it as though the student had just \
+handed it to you. Asking "are you still there?" reaches nobody - that note is \
+the whole of the evidence, and you wrote it yourself when you set this timer. \
+Work through it in this order:
 
 - Nothing written about why - allow, empty url, no message. Say nothing.
 - The note says they left, or that the last nudge worked - allow, empty url, no \
 message. It worked; do not go hunting for something else to say.
-- The note counts nudges they sat through - two, three, still there each time - \
-then that is where they are, and you already know the asking does not work. \
-Repeating it is the one move with evidence against it, so either ask for \
-something smaller and different, or lock it and say why. That you cannot \
-confirm they are still on the site is not a reason to do nothing; a wake never \
-gets any confirmation, which is why the note is written in the first place.
+- The note counts nudges - even one, "nudged 1x", means you asked and set this \
+timer to find out whether it took, and nothing since then says it did. Treat \
+them as still there and carry the chain forward. What you may not do is allow \
+and go quiet, because a bare allow sets no new timer and you are never called \
+again - the student browses on forever and the second nudge you were building \
+toward never comes. Either ask again - smaller \
+and sharper than last time, a fresh callback, and the note bumped to the next \
+count - or lock it and say why. Count honestly whichever you pick: the note \
+says how many times you have actually asked, so "twice I asked" written over a \
+note reading 1x is a number you invented, and they were there for the real one. That \
+you cannot confirm they are still on the site is not a reason to do nothing; a \
+wake never gets any confirmation, which is why the note is written in the first \
+place.
 That last one holds everywhere, not just on wakes. Three ignored nudges and a \
 fourth in the same shape is not patience, it is noise, and noise gets you \
 uninstalled. Anything a wake teaches you that will still be true tomorrow - what \
@@ -267,7 +284,25 @@ FEW_SHOT = [
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"Ranked eats hours and you know how it goes. Half an hour on the coursework first. I will look in again in five minutes.","callback":300}'},
 
-    # 3. Wake - the prompt says only that the timer fired, and the decision comes
+    # 3. A wake at a single nudge. Without this the
+    #    model reads "two, three" in the wake rules, sees 1x, finds no rung that
+    #    fits and allows - which sets no callback, so it is never woken again
+    #    and the count can never reach the lock above. One ignored nudge
+    #    escalates and re-arms: the count goes up, the ask gets smaller, and the
+    #    note carries the chain to the next wake.
+    {"role": "user", "content": "Waking up - you asked to check back.\n"
+                                "(Your short memory at this point read: \"Nudged reddit.com 1x at "
+                                "16:04 - check in 10 min whether they left.\")"},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged reddit.com 2x at 16:14 - still there. Check in 10 min; lock if unchanged."}}'},
+    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"reddit.com","message":"Still here. Forget the half hour - open the notes and give it ten minutes, that is all I am asking. I will look again.","callback":600}'},
+
+
+    # 3b. The same wake one rung on. Ordered AFTER the 1x case on purpose:
+    #    with the 2x lock first, 3 of 6 live 1x wakes copied its "Twice I have
+    #    asked" onto a note that read 1x - inventing a count the student knows
+    #    is wrong. The nearer example wins, so the nearer example is the honest
+    #    one. Wake - the prompt says only that the timer fired, and the decision comes
     #    straight off the note, with no tool call: short memory is printed in the
     #    system prompt, so there is nothing to fetch. This example used to open
     #    with read_memory("short"), and dropping that tool left a bare wake into
@@ -278,7 +313,7 @@ FEW_SHOT = [
     {"role": "user", "content": "Waking up - you asked to check back.\n"
                                 "(Your short memory at this point read: \"Nudged twitch.tv 2x - "
                                 "still there both times.\")"},
-    {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"twitch.tv","message":"Twice I have asked, and you are still here. Closing this one - come find me when the notes are done."}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"twitch.tv","message":"I have asked more than once and you are still here. Closing this one - come find me when the notes are done."}'},
 
     # 4. Hebrew tab gets a Hebrew message. No deadline named - it read nothing
     #    this turn, so it argues from the tab. Statement, not question: the
@@ -381,3 +416,24 @@ def build_system(now: str, weekday: str, today: str,
                         and short_memory.strip()) else "",
         short_memory=short_memory.strip() or "(empty)",
     )
+
+
+# The client's wake sentinel, matched exactly. This is not the student typing -
+# it is a fixed string the GUI sends when a callback fires, so recognizing it is
+# not parsing free text.
+WAKE_SENTINEL = "Waking up - you asked to check back."
+
+
+def wake_prompt(prompt: str, short_memory: str) -> str:
+    """On a wake, restate the agent's own note inside the user turn.
+
+    Every few-shot wake carries its note inline; a live wake arrived bare, with
+    the note only in the system block. The examples never matched that shape, so
+    the model read its own "nudged 2x" as background and allowed - eleven prompt
+    rewrites did not move it, and the same note moved into the user turn fixes
+    it outright. Nothing is added here that the agent did not write itself.
+    """
+    note = short_memory.strip()
+    if prompt.strip() != WAKE_SENTINEL or not note:
+        return prompt
+    return f'{prompt}\n(Your short memory at this point read: "{note}")'

@@ -71,10 +71,19 @@ def run(prompt: str) -> tuple[dict, list]:
 
     # The prompt goes to the model verbatim. No pre-parse, no [parsed: ...] hint -
     # working out the site and title from free text is part of the agent's job.
+    #
+    # One exception, and it is not student text: the wake sentinel below is a
+    # fixed string the client sends itself, so matching it is not classification.
+    # A bare wake was allowed even at "nudged 2x" through eleven prompt rewrites.
+    # The cause is shape, not wording - every few-shot wake carries its note
+    # INSIDE the user turn, while the live wake arrived bare with the note only
+    # up in the system block, so the examples never matched and the model read
+    # the note as background. Same note, moved into the user turn, escalates.
+    # This does not tell the agent anything it did not write itself.
     messages = (
         [{"role": "system", "content": system}]
         + prompts.FEW_SHOT
-        + [{"role": "user", "content": prompt}]
+        + [{"role": "user", "content": prompts.wake_prompt(prompt, short["content"])}]
     )
     steps: list[dict] = []
 
