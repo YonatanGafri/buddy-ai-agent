@@ -37,8 +37,16 @@ def read_todo_list() -> dict:
     }
 
 
-def read_memory(scope: str = "short") -> dict:
-    return memory.read(scope)
+def read_long_memory() -> dict:
+    """Long memory only, and deliberately no scope argument.
+
+    Short memory is inlined in the system prompt on every turn, so a read of it
+    could only spend a turn handing back what the model can already see. Given
+    the choice the model took it anyway: 12 of 20 probe runs opened with a read
+    of short memory before deciding. Removing the option is more reliable than
+    asking it not to, and it makes the remaining tool self-describing.
+    """
+    return memory.read("long")
 
 
 def rewrite_memory(scope: str = "short", text: str = "") -> dict:
@@ -48,7 +56,7 @@ def rewrite_memory(scope: str = "short", text: str = "") -> dict:
 TOOLS = {
     "read_calendar": read_calendar,
     "read_todo_list": read_todo_list,
-    "read_memory": read_memory,
+    "read_long_memory": read_long_memory,
     "rewrite_memory": rewrite_memory,
 }
 
