@@ -23,13 +23,7 @@ only when the student writes.
 
 ## How it works
 
-```
-prompt -> ReAct.LLM -> decision?  -> yes -> response
-              ^                |
-              |                no
-              |                v
-              +------------ Tools.*
-```
+![Architecture](data/architecture.png)
 
 The loop runs turns until the model returns a decision. There is no step limit;
 the ceiling is 240s of wall clock, leaving headroom under Vercel's 300s cap.
