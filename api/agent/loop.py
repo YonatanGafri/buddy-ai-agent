@@ -3,16 +3,18 @@
 No step limit - the agent takes as many tool calls as it needs. The only ceiling
 is wall clock: 240s, leaving 60s of headroom under Vercel's 300s hard cap.
 
-Three exits:
+Four exits:
   1. The model emits a decision - the normal one.
-  2. The deadline passes - stop feeding tool results, force one summarizing turn.
-  3. That forced turn still isn't a decision - return allow, no timer.
+  2. The model emits an error - it read the prompt and found no tab to judge.
+  3. The deadline passes - stop feeding tool results, force one summarizing turn.
+  4. That forced turn still isn't a decision - return allow, no callback.
 
-Exit 3 is what makes exit 2 safe. Without it, a model that keeps requesting
+Exit 4 is what makes exit 3 safe. Without it, a model that keeps requesting
 tools loops forever and burns the budget.
 
 Nothing here second-guesses the decision itself. The loop runs turns and stops;
-what to do about a tab is the agent's call, not the harness's.
+what to do about a tab - and whether the prompt even contains one - is the
+agent's call, not the harness's.
 """
 import json
 import time
@@ -28,22 +30,33 @@ def _is_decision(reply: dict | None) -> bool:
     return bool(reply) and reply.get("type") == "decision" and reply.get("action") in ACTIONS
 
 
-def _clean_decision(reply: dict, fallback_url: str) -> dict:
-    """Keep only the four sanctioned fields, and only a sane callback."""
-    out = {
-        "action": reply.get("action"),
-        "url": reply.get("url") or fallback_url,
-        "message": (reply.get("message") or "").strip(),
-    }
-    delay = reply.get("callback_delay_seconds")
-    if isinstance(delay, (int, float)) and delay > 0:
-        out["callback_delay_seconds"] = int(delay)
+def _clean_decision(reply: dict) -> dict:
+    """Keep only the sanctioned fields, and only a sane callback.
+
+    message is dropped on allow. The student only ever reads a message through a
+    nudge toast, so an allow message is written, sent and never displayed - and a
+    model asked for one every turn starts narrating ("Good, keep going!"), which
+    reads as surveillance for the one action that is supposed to be silent.
+    Enforced here rather than trusted to the prompt: it is one line, and it makes
+    the contract true regardless of what the model returns.
+    """
+    action = reply.get("action")
+    out = {"action": action, "url": (reply.get("url") or "").strip()}
+    if action != "allow":
+        out["message"] = (reply.get("message") or "").strip()
+    callback = reply.get("callback")
+    if isinstance(callback, (int, float)) and callback > 0:
+        out["callback"] = int(callback)
     return out
 
 
-def run(prompt: str, domain: str, title: str) -> tuple[dict, list]:
-    """Returns (decision, steps). Never raises for model behaviour - only for a
-    dead LLM endpoint, which the caller turns into status:"error"."""
+def run(prompt: str) -> tuple[dict, list]:
+    """Returns (result, steps). result is a decision dict, or {"error": ...} when
+    the agent judged there was no browsing event to act on.
+
+    Never raises for model behaviour - only for a dead LLM endpoint, which the
+    caller turns into status:"error".
+    """
     deadline = time.time() + DEADLINE_SECONDS
     now = datetime.now()
 
@@ -56,11 +69,12 @@ def run(prompt: str, domain: str, title: str) -> tuple[dict, list]:
         short_memory=short["content"],
     )
 
-    event = f"Opened {domain}" + (f" - '{title}'" if title else "")
+    # The prompt goes to the model verbatim. No pre-parse, no [parsed: ...] hint -
+    # working out the site and title from free text is part of the agent's job.
     messages = (
         [{"role": "system", "content": system}]
         + prompts.FEW_SHOT
-        + [{"role": "user", "content": f"{prompt}\n\n[parsed: {event}]"}]
+        + [{"role": "user", "content": prompt}]
     )
     steps: list[dict] = []
 
@@ -76,7 +90,11 @@ def run(prompt: str, domain: str, title: str) -> tuple[dict, list]:
         })
 
         if _is_decision(reply):
-            return _clean_decision(reply, domain), steps
+            return _clean_decision(reply), steps
+
+        # Exit 2: the agent read the prompt and found nothing to judge.
+        if reply and reply.get("type") == "error":
+            return {"error": (reply.get("message") or "").strip() or prompts.TEMPLATE}, steps
 
         if time.time() >= deadline:
             messages = messages + [
@@ -91,9 +109,9 @@ def run(prompt: str, domain: str, title: str) -> tuple[dict, list]:
                 "response": final if final is not None else {"raw": raw},
             })
             if _is_decision(final):
-                return _clean_decision(final, domain), steps
-            # Exit 3: a stuck agent must never hang the browser.
-            return {"action": "allow", "url": domain, "message": ""}, steps
+                return _clean_decision(final), steps
+            # Exit 4: a stuck agent must never hang the browser.
+            return {"action": "allow", "url": ""}, steps
 
         # Not a decision and time remains: run the tool it asked for. An
         # unparseable reply has no tool name, so it lands in run_tool's unknown

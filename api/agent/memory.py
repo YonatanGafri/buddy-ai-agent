@@ -34,6 +34,21 @@ def configured() -> bool:
     return bool(URL and KEY)
 
 
+def select(table: str, params: dict) -> list | dict:
+    """GET rows from a table. Returns {"error": ...} instead of raising, so a
+    tool call can hand the failure to the model as an observation."""
+    if not configured():
+        return {"error": "Supabase is not configured on this server."}
+    try:
+        r = requests.get(
+            f"{URL}/rest/v1/{table}", headers=_headers(), params=params, timeout=TIMEOUT
+        )
+        r.raise_for_status()
+        return r.json()
+    except Exception as exc:
+        return {"error": f"could not read {table}: {str(exc)[:200]}"}
+
+
 def read(scope: str) -> dict:
     """{content, updated_at} for a scope. Missing row reads as empty."""
     if scope not in ("short", "long"):

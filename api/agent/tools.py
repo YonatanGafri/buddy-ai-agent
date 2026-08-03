@@ -8,37 +8,40 @@ combined tool; the split buys autonomy and a clearer trace.
 There is deliberately no `classify` tool: the agent already has the URL, title,
 calendar and memory in context, so classification happens inside the main
 reasoning turn rather than in a second round-trip.
+
+All four read from Supabase, which is also what the GUI's context panel shows.
+They used to read data/*.json while the panel read the database, so a row edited
+in Supabase was visible to the student and invisible to the agent - the panel
+claimed to show "what Buddy knows" and did not. The JSON files are now seed input
+for scripts/seed.py, nothing more.
 """
-import json
-from pathlib import Path
-
 from . import memory
-
-DATA = Path(__file__).resolve().parent.parent.parent / "data"
-
-
-def _read_json(name: str) -> dict:
-    try:
-        return json.loads((DATA / name).read_text(encoding="utf-8"))
-    except Exception as exc:
-        return {"error": f"could not read {name}: {exc}"}
 
 
 def read_calendar() -> dict:
     """Mock MCP read - the student's calendar."""
-    return _read_json("calendar.json")
+    rows = memory.select("calendar_events", {"select": "date,title", "order": "date.asc"})
+    if isinstance(rows, dict):
+        return rows  # {"error": ...}
+    return {"weekly_events": rows}
 
 
 def read_todo_list() -> dict:
     """Mock MCP read - the student's todo list."""
-    return _read_json("todo-list.json")
+    rows = memory.select("todo_tasks", {"select": "task,status,ord", "order": "ord.asc"})
+    if isinstance(rows, dict):
+        return rows
+    return {
+        "pending_tasks": [r["task"] for r in rows if r.get("status") == "pending"],
+        "completed_tasks": [r["task"] for r in rows if r.get("status") == "completed"],
+    }
 
 
 def read_memory(scope: str = "short") -> dict:
     return memory.read(scope)
 
 
-def update_memory(scope: str = "short", text: str = "") -> dict:
+def rewrite_memory(scope: str = "short", text: str = "") -> dict:
     return memory.write(scope, text)
 
 
@@ -46,7 +49,7 @@ TOOLS = {
     "read_calendar": read_calendar,
     "read_todo_list": read_todo_list,
     "read_memory": read_memory,
-    "update_memory": update_memory,
+    "rewrite_memory": rewrite_memory,
 }
 
 
