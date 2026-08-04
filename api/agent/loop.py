@@ -15,6 +15,11 @@ tools loops forever and burns the budget.
 Nothing here second-guesses the decision itself. The loop runs turns and stops;
 what to do about a tab - and whether the prompt even contains one - is the
 agent's call, not the harness's.
+
+The one thing it does finish on the agent's behalf is bookkeeping, and only when
+the agent armed a timer it left nothing to read - see _ensure_short_note. That
+is not a second guess: the action, the message and the callback come back
+exactly as written.
 """
 import json
 import time
@@ -47,7 +52,86 @@ def _clean_decision(reply: dict) -> dict:
     callback = reply.get("callback")
     if isinstance(callback, (int, float)) and callback > 0:
         out["callback"] = int(callback)
+    elif action == "nudge":
+        # A nudge without a callback is a wish: no wake ever fires and the
+        # chain dies silently. The prompt says every nudge sets one; when the
+        # model skips it anyway, arm a default so the contract stays true.
+        out["callback"] = 600
     return out
+
+
+def _wrote_short(steps: list, url: str) -> bool:
+    """Did this run leave itself a note in short memory ABOUT THIS SITE?
+
+    Any short write used to count, so a housekeeping write early in the run
+    (stale-day cleanup, say) satisfied the check and the wake then read a note
+    that never mentioned the site being nudged. Requiring the judged domain in
+    the text closes that; with no url, any non-empty write still counts.
+    """
+    domain = (url or "").strip().lower()
+    for s in steps:
+        if s["module"] != "Tools.rewrite_memory":
+            continue
+        args = s["prompt"].get("args") or {}
+        text = str(args.get("text") or "").strip()
+        if (args.get("scope") == "short" and text and s["response"].get("ok")
+                and (not domain or domain in text.lower())):
+            return True
+    return False
+
+
+def _ensure_short_note(decision: dict, steps: list, short_before: str) -> list:
+    """Arming a callback with nothing written is a follow-up aimed at nothing.
+
+    A wake is told only that the timer fired - never which site it was for. The
+    note in short memory is the entire briefing, and the prompt says so at
+    length. In production it got written on half the nudges: 5 of 10 set a
+    callback and wrote nothing. That is not a cosmetic miss. One measured run
+    nudged twitter.com, wrote no note, and when its callback fired the agent
+    read the PREVIOUS site's leftover note and followed up about wikipedia.org -
+    a site the student had already left. The chain does not just go quiet, it
+    reattaches to the wrong tab, which is worse than silence.
+
+    Rewriting the prompt is the move that has already failed here - this exact
+    instruction is spelled out with reasons and it still lands about half the
+    time. So this is enforced where it is deterministic instead. What is written
+    is only what the loop watched happen: the action, the domain the agent
+    itself returned, and the delay it chose. No count, because the honest count
+    lives in the note the agent did not write, and inventing "nudged 1x" over an
+    unknown history is the same lie the prompt warns about. No deadline, no task
+    - nothing that would need a tool read to be true.
+
+    Deliberately narrow. It fires only when a callback is armed AND nothing was
+    written, so an agent that keeps its own books is never touched, and a
+    decision without a timer is left completely alone.
+    """
+    url = (decision.get("url") or "").strip()
+    if not decision.get("callback") or _wrote_short(steps, url):
+        return steps
+
+    text = (
+        f"{decision['action']} {url}".strip()
+        + f" - callback in {decision['callback']}s to check whether it landed."
+        " (Written by the loop: the decision set a timer but left no note, so"
+        " this records only what was decided - no nudge count, and nothing"
+        " about deadlines or tasks.)"
+    )
+    # Anything the agent knew before this run still belongs to it: appended, not
+    # overwritten, or a wake loses the history it was actually counting on.
+    if short_before.strip():
+        text = f"{short_before.strip()}\n{text}"
+
+    result = tools.run_tool("rewrite_memory", {"scope": "short", "text": text})
+    # Traced like any other tool call - the module name says who called it, so
+    # the step list stays an honest record rather than a write appearing from
+    # nowhere. Spec-shaped: {module, prompt, response}, same as every other step.
+    return steps + [{
+        "module": "Tools.rewrite_memory",
+        "prompt": {"tool": "rewrite_memory",
+                   "args": {"scope": "short", "text": text},
+                   "note": "written by the loop - callback armed with no note"},
+        "response": result,
+    }]
 
 
 def run(prompt: str) -> tuple[dict, list]:
@@ -99,7 +183,8 @@ def run(prompt: str) -> tuple[dict, list]:
         })
 
         if _is_decision(reply):
-            return _clean_decision(reply), steps
+            decision = _clean_decision(reply)
+            return decision, _ensure_short_note(decision, steps, short["content"])
 
         # Exit 2: the agent read the prompt and found nothing to judge.
         if reply and reply.get("type") == "error":
@@ -118,7 +203,8 @@ def run(prompt: str) -> tuple[dict, list]:
                 "response": final if final is not None else {"raw": raw},
             })
             if _is_decision(final):
-                return _clean_decision(final), steps
+                decision = _clean_decision(final)
+                return decision, _ensure_short_note(decision, steps, short["content"])
             # Exit 4: a stuck agent must never hang the browser.
             return {"action": "allow", "url": ""}, steps
 

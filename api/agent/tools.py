@@ -15,6 +15,10 @@ in Supabase was visible to the student and invisible to the agent - the panel
 claimed to show "what Buddy knows" and did not. The JSON files are now seed input
 for scripts/seed.py, nothing more.
 """
+import html as _html
+import re
+import urllib.request
+
 from . import memory
 
 
@@ -53,11 +57,52 @@ def rewrite_memory(scope: str = "short", text: str = "") -> dict:
     return memory.write(scope, text)
 
 
+_TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.I | re.S)
+_META_DESC_RE = re.compile(
+    r'<meta[^>]+(?:name|property)=["\'](?:og:)?description["\'][^>]*>', re.I)
+_CONTENT_RE = re.compile(r'content=["\']([^"\']*)["\']', re.I)
+
+
+def read_website(url: str = "") -> dict:
+    """Fetch a page and return only its <title> and meta description.
+
+    Page text never reaches the model - the whole HTML stays in here and two
+    short strings come out. What comes out is still web content, not the
+    student, so the loop's OBSERVATION prefix applies to it like any other
+    tool result.
+    """
+    if not url:
+        return {"error": "read_website needs a url"}
+    if not re.match(r"^https?://", url, re.I):
+        url = "https://" + url
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Buddy)"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            # ponytail: first 64KB only - title/meta live in <head>; full pages can be MBs
+            raw = resp.read(65536).decode("utf-8", errors="replace")
+    except Exception as exc:
+        return {"error": f"could not fetch {url}: {str(exc)[:200]}"}
+
+    title = _TITLE_RE.search(raw)
+    desc = None
+    meta = _META_DESC_RE.search(raw)
+    if meta:
+        content = _CONTENT_RE.search(meta.group(0))
+        desc = content.group(1) if content else None
+
+    clean = lambda s: _html.unescape(re.sub(r"\s+", " ", s)).strip()[:300]
+    return {
+        "title": clean(title.group(1)) if title else None,
+        "description": clean(desc) if desc else None,
+    }
+
+
 TOOLS = {
     "read_calendar": read_calendar,
     "read_todo_list": read_todo_list,
     "read_long_memory": read_long_memory,
     "rewrite_memory": rewrite_memory,
+    "read_website": read_website,
 }
 
 
