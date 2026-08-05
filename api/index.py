@@ -101,11 +101,15 @@ async def close_tab():
     if elapsed_mins < 0:
         elapsed_mins = 0
         
-    category = "Study"
-    if any(k in activity_desc for k in ["entertainment", "music", "video", "facebook", "youtube"]):
-        category = "Entertainment"
-    elif any(k in activity_desc for k in ["errand", "mail", "bank"]):
-        category = "Errands"
+    category_match = re.search(r'\[(Study|Entertainment|Errands)\]', activity_desc, re.IGNORECASE)
+    if category_match:
+        category = category_match.group(1).capitalize()
+    else:
+        category = "Study"
+        if any(k in activity_desc for k in ["entertainment", "music", "video", "facebook", "youtube"]):
+            category = "Entertainment"
+        elif any(k in activity_desc for k in ["errand", "mail", "bank"]):
+            category = "Errands"
         
     pattern = rf'- {category}: (?:(\d+) hours? )?(\d+) mins'
     

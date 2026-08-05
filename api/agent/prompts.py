@@ -205,7 +205,7 @@ DO NOT keep a literal timeline of every event. Instead, track total time: \
 - Errands: X hours Y mins \
 - Entertainment: X hours Y mins \
 [Current Activity] \
-- Started [Activity Name] at [HH:MM]. \
+- Started [Activity Name] [Category] at [HH:MM]. \
 \
 Before you write, compute the time spent on the PREVIOUS activity (Now minus \
 Started) and add it to the correct Cumulative total. \
@@ -289,24 +289,24 @@ FEW_SHOT = [
     # 1. An obviously on-task tab, allowed. Every decision must be documented, 
     #    so it writes to short memory before returning allow.
     {"role": "user", "content": "Opened jstor.org - 'kinship structures in highland burma'"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started jstor.org at 10:15."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started jstor.org [Study] at 10:15."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"jstor.org"}'},
 
     # 1b. Allow for a break based on continuous learning flow. The agent computes the time difference
     # from its own notes and grants a break. Note that no message is returned on allow, but a
     # callback is set to check back later.
-    {"role": "user", "content": "Opened facebook.com\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 2 hours 15 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il at 14:00.\")\nSystem: It is now 15:15."},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 3 hours 30 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started facebook.com (10 min break) at 15:15."}}'},
+    {"role": "user", "content": "Opened facebook.com\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 2 hours 15 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il [Study] at 14:00.\")\nSystem: It is now 15:15."},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 3 hours 30 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started facebook.com [Entertainment] at 15:15."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"facebook.com","callback":600}'},
 
     # 1c. YouTube is a mixed-use site. The agent uses read_website to check if
     # the video is educational before deciding.
-    {"role": "user", "content": "Opened youtube.com/watch?v=12345\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il at 10:15.\")\nSystem: It is now 11:00."},
+    {"role": "user", "content": "Opened youtube.com/watch?v=12345\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il [Study] at 10:15.\")\nSystem: It is now 11:00."},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_website","args":{"url":"youtube.com/watch?v=12345"}}'},
     {"role": "user", "content": OBSERVATION + '{"read_website":{"title":"MIT 18.06 Linear Algebra, Spring 2005","description":"Linear Algebra lecture"}}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 1 hour 45 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 1 hour 45 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com [Study] at 11:00."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"youtube.com","message":"I see this is an educational video on Linear Algebra, keep it up!"}'},
 
@@ -315,7 +315,7 @@ FEW_SHOT = [
     #    check in one write before the decision. The calendar comes back EMPTY
     #    and the nudge names no deadline - it argues from the tab alone, which
     #    is what the agent must do when it has read nothing that supports one.
-    {"role": "user", "content": "Opened twitch.tv - 'valorant ranked grind'\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00.\")\nSystem: It is now 14:58."},
+    {"role": "user", "content": "Opened twitch.tv - 'valorant ranked grind'\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com [Study] at 11:00.\")\nSystem: It is now 14:58."},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_calendar","args":{}}'},
     {"role": "user", "content": OBSERVATION + '{"weekly_events":[]}'},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 4 hours 58 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged twitch.tv 1x at 14:58 (check in 5 min)."}}'},
@@ -323,7 +323,7 @@ FEW_SHOT = [
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"Ranked eats hours. I will let you stay for a bit, but I will check back on you in 5 minutes to make sure you return to your coursework.","callback":300}'},
 
     # 2a. Two reads in one turn, then the write, then the decision. 
-    {"role": "user", "content": "opened ebay.com, just browsing\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il at 09:00.\")\nSystem: It is now 10:00."},
+    {"role": "user", "content": "opened ebay.com, just browsing\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il [Study] at 09:00.\")\nSystem: It is now 10:00."},
     {"role": "assistant", "content": '{"type":"tool_call","tools":[{"tool":"read_calendar","args":{}},{"tool":"read_todo_list","args":{}}]}'},
     {"role": "user", "content": OBSERVATION + '{"read_calendar":{"weekly_events":[]},"read_todo_list":{"pending_tasks":[],"completed_tasks":[]}}'},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged ebay.com 1x at 10:00 (check in 10 min)."}}'},
