@@ -149,6 +149,8 @@ async def simulate_new_day():
         "- Study: 0 mins\n"
         "- Errands: 0 mins\n"
         "- Entertainment: 4 hours 30 mins\n"
+        "[Daily Flow]\n"
+        "- Evening: long Netflix block starting 19:47; opened YouTube entertainment at 23:59 and watched for 7 mins; locked YouTube at 00:06 to protect study time.\n"
         "[Current Activity]\n"
         "- Offline (no active tracked tabs)."
     )
