@@ -763,8 +763,8 @@ function App() {
               <button title="For testing purposes only: Simulates the passing of a day by changing the short memory date to yesterday. This forces the agent to trigger the End of Day summary and update Long Memory habits." style={{background: 'transparent', border: 'none', color: 'var(--ink-faint)', fontSize: '11px', cursor: 'pointer', marginRight: '10px'}} disabled={busy} onClick={() => { fetch('/api/simulate_new_day', {method: 'POST'}).then(() => window.location.reload()) }}>
                 Simulate New Day (i)
               </button>
-              <button style={{background: 'transparent', border: 'none', color: 'var(--ink-faint)', fontSize: '11px', cursor: 'pointer'}} disabled={busy} onClick={() => runAgent('Waking up - you asked to check back.', { wake: true })}>
-                Wake Up (For Testing)
+              <button title="For testing purposes only: Forces the agent to evaluate the student immediately (useful if the agent previously scheduled a check-in timer, and you don't want to wait)." style={{background: 'transparent', border: 'none', color: 'var(--ink-faint)', fontSize: '11px', cursor: 'pointer'}} disabled={busy} onClick={() => runAgent('Waking up - you asked to check back.', { wake: true })}>
+                Wake Up (For Testing) (i)
               </button>
             </div>
             <DecisionHistory answers={answers} />
