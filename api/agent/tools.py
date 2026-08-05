@@ -43,6 +43,13 @@ def read_todo_list() -> dict:
     }
 
 
+
+def update_todo_status(task_name: str, status: str) -> dict:
+    """Mark a task as 'completed' or 'pending'."""
+    if status not in ("completed", "pending"):
+        return {"error": "status must be 'completed' or 'pending'"}
+    return memory.update("todo_tasks", {"task": task_name}, {"status": status})
+
 def read_long_memory() -> dict:
     """Long memory only, and deliberately no scope argument.
 
@@ -121,6 +128,7 @@ def read_website(url: str = "") -> dict:
 TOOLS = {
     "read_calendar": read_calendar,
     "read_todo_list": read_todo_list,
+    "update_todo_status": update_todo_status,
     "read_long_memory": read_long_memory,
     "rewrite_memory": rewrite_memory,
     "read_website": read_website,

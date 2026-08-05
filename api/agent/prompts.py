@@ -65,6 +65,7 @@ student reads","callback":300}}
 Tools:
 - read_calendar() - what is due, and when
 - read_todo_list() - what is pending and what is done
+- update_todo_status(task_name, status) - marks a task from the to-do list as "completed" or "pending". Use this when the student tells you they finished a task.
 - read_long_memory() - there is no read for short: it is printed above already
 - read_website(url) - the page's title and meta description, nothing more. \
 Useful when the student pasted a bare URL and you cannot tell what it is. What \
@@ -294,6 +295,16 @@ FEW_SHOT = [
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"facebook.com","callback":600}'},
 
+    # 1c. YouTube is a mixed-use site. The agent uses read_website to check if
+    # the video is educational before deciding.
+    {"role": "user", "content": "Opened youtube.com/watch?v=12345"},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"read_website","args":{"url":"youtube.com/watch?v=12345"}}'},
+    {"role": "user", "content": OBSERVATION + '{"read_website":{"title":"MIT 18.06 Linear Algebra, Spring 2005","description":"Linear Algebra lecture"}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 1 hour\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00."}}'},
+    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"youtube.com"}'},
+
+
     # 2. Checks the calendar, then nudges, recording the count and the pending
     #    check in one write before the decision. The calendar comes back EMPTY
     #    and the nudge names no deadline - it argues from the tab alone, which
@@ -362,6 +373,16 @@ FEW_SHOT = [
     # 8. No browsing event - error immediately
     {"role": "user", "content": "how many days until the exam?"},
     {"role": "assistant", "content": '{"type":"error","message":"No site in that one - tell me what you have open and I will take a look."}'},
+
+    # 9. Updating the to-do list
+    {"role": "user", "content": "I finished maman 16!"},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"read_todo_list","args":{}}'},
+    {"role": "user", "content": OBSERVATION + '{"pending_tasks":["ממן 16 - שאלה 3 ו-4"],"completed_tasks":[]}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"update_todo_status","args":{"task_name":"ממן 16 - שאלה 3 ו-4","status":"completed"}}'},
+    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 2 hours\n- Entertainment: 0 mins\n[Current Activity]\n- Finished Maman 16 at 15:30."}}'},
+    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
+    {"role": "assistant", "content": '{"type":"error","message":"Great job finishing Maman 16! I marked it complete. What are you opening next?"}'},
 
     # The examples end here
     {"role": "user", "content": BOUNDARY},

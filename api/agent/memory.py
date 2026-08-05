@@ -49,6 +49,26 @@ def select(table: str, params: dict) -> list | dict:
         return {"error": f"could not read {table}: {str(exc)[:200]}"}
 
 
+
+def update(table: str, match: dict, data: dict) -> dict:
+    """PATCH rows in a table."""
+    if not configured():
+        return {"error": "Supabase is not configured on this server."}
+    
+    params = {k: f"eq.{v}" for k, v in match.items()}
+    try:
+        r = requests.patch(
+            f"{URL}/rest/v1/{table}",
+            headers={**_headers(), "Prefer": "return=minimal"},
+            params=params,
+            json=data,
+            timeout=TIMEOUT
+        )
+        r.raise_for_status()
+        return {"ok": True}
+    except Exception as exc:
+        return {"error": f"could not update {table}: {str(exc)[:200]}"}
+
 def read(scope: str) -> dict:
     """{content, updated_at} for a scope. Missing row reads as empty."""
     if scope not in ("short", "long"):
