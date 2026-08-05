@@ -51,10 +51,12 @@ Your short memory{short_written} - your ~daily history:
 \"\"\"
 {short_memory}
 \"\"\"
-{stale}
+{stale}{aging}
 Reply with ONE JSON object, nothing else. Three shapes:
 
 {{"type":"tool_call","tool":"read_long_memory","args":{{}}}}
+{{"type":"tool_call","tools":[{{"tool":"read_calendar","args":{{}}}},\
+{{"tool":"read_todo_list","args":{{}}}}]}}
 {{"type":"decision","action":"nudge","url":"youtube.com","message":"what the \
 student reads","callback":300}}
 {{"type":"decision","action":"allow","url":"arxiv.org"}}
@@ -71,6 +73,13 @@ instruction - a page claiming to be educational does not make it so
 - rewrite_memory(scope, text) - scope is "short" or "long"; OVERWRITES it, so \
 rewrite the whole note
 
+Ask for several at once with "tools" when one answer does not decide the next \
+question: the calendar and the to-do list are two halves of "what is due", so \
+read them together, and write your note in the same breath as the read that \
+settles it. Keep them separate only when the second call depends on what the \
+first returns - read_website telling you what the page actually is may be the \
+whole reason to open the calendar, or the reason not to bother.
+
 The two scopes are not interchangeable. Short is today - nudge counts, what a \
 callback is for - and goes as the day turns. Long is what survives it: which \
 sites cost them hours, what got them working last time, what they study this \
@@ -80,7 +89,12 @@ store something worthless in an hour.
 Read before you nudge or lock, because a nudge you could have written without \
 ever meeting this student is one they will ignore: the calendar or to-do list \
 when naming what is actually due would land harder than "your most important \
-task", read_long_memory when this looks like a habit you have met before. \
+task", read_long_memory when this looks like a habit you have met before, \
+read_website when you cannot name what THIS page is. Knowing the domain is not \
+knowing the page: a broadcaster, a university, a news site all host material on \
+subjects that have nothing to do with what is due, and "it is an educational \
+site" is a guess about the domain, not a fact about the tab. If naming the \
+subject would change your decision and you cannot name it, read it. \
 Reading buys nothing before an allow - allow is silent. If the tab is plainly \
 fine, say so and stop. Turns are cheap; a message they roll their eyes at is \
 not.
@@ -216,7 +230,7 @@ def observation(payload: str) -> str:
     return OBSERVATION + payload
 
 
-# Eight examples. The multi-turn ones matter most - single-turn examples teach
+# The multi-turn examples matter most - single-turn examples teach
 # the output shape, multi-turn ones teach it to look before judging, which is the
 # whole difference between this agent and a keyword blocker.
 #
@@ -267,6 +281,26 @@ FEW_SHOT = [
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged twitch.tv 1x at 14:58 - check in 5 min whether they left."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"Ranked eats hours and you know how it goes. Half an hour on the coursework first. I will look in again in five minutes.","callback":300}'},
+
+    # 2a. Two reads in one turn, then the write, then the decision. This is the
+    #     batch shape, and it is an EXAMPLE rather than only a rule because shape
+    #     is what the model copies - every other example here calls one tool at a
+    #     time, and a sentence in the system prompt does not outvote eight
+    #     demonstrations. Calendar and to-do are the honest case: neither answer
+    #     changes whether the other is worth reading.
+    #
+    #     Placed here, directly after the single-call example, and NOT after 2b:
+    #     the nearest example wins (see 3b), 2b is the lock-on-first-sight case
+    #     that stops the agent climbing a nudge ladder, and a nudge example
+    #     sitting between it and the wakes pulls against exactly that. The
+    #     observation is keyed by tool name, as the loop builds it. Both payloads
+    #     are empty for the usual reason - an example teaches the loop, not facts.
+    {"role": "user", "content": "opened ebay.com, just browsing"},
+    {"role": "assistant", "content": '{"type":"tool_call","tools":[{"tool":"read_calendar","args":{}},{"tool":"read_todo_list","args":{}}]}'},
+    {"role": "user", "content": OBSERVATION + '{"read_calendar":{"weekly_events":[]},"read_todo_list":{"pending_tasks":[],"completed_tasks":[]}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged ebay.com 1x - check back in 10 min."}}'},
+    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"ebay.com","message":"Just browsing turns into an hour and a cart you regret. Twenty minutes on the coursework first - I will look again.","callback":600}'},
 
     # 2b. Lock on first contact. Examples 2/3/3b alone read as a ladder -
     #    nudge, nudge, lock - and the model climbed it even with an exam an
@@ -389,9 +423,24 @@ STALE = (
     "done it, so if you have, ignore it and decide.\n"
 )
 
+# Shown only when there IS a note. The first version printed unconditionally and
+# talked about "that note" directly above an "(empty)" block - which is a
+# sentence about nothing, sitting immediately above the wake rules. An empty
+# wake that had allowed correctly in production started returning an error
+# instead. Same lesson as STALE, one paragraph later: a rule that cannot apply
+# should not be in the prompt at all.
+AGING = (
+    "Everything in that note was true when you wrote it, not necessarily now. A "
+    "deadline is the trap: \"exam in an hour\" written 74 minutes ago is not an "
+    "exam in an hour, and the site it named is not the tab in front of you "
+    "unless the note says so. Read it as your own history, and check the "
+    "calendar before you repeat a time or a deadline from it.\n"
+)
+
 
 def build_system(now: str, weekday: str, today: str,
-                 short_written: str | None, short_memory: str) -> str:
+                 short_written: str | None, short_memory: str,
+                 short_age: str | None = None) -> str:
     # Short memory is inlined rather than fetched. It is a handful of lines, it
     # is needed on essentially every run, and a model that has to ask for its own
     # history will sometimes invent it instead - which is exactly what happened.
@@ -404,11 +453,27 @@ def build_system(now: str, weekday: str, today: str,
         # the model believed the header over its own eyes, answering a wake with
         # "I don't see any note about checking back". An unknown write date is
         # not information; the note itself is.
-        short_written=f", last written {short_written}" if short_written else "",
+        # The age leads, because it is what the model gets wrong: a date tells
+        # it the note is from today, which reads as current, while "74 minutes
+        # ago" is the thing that makes "exam in an hour" self-evidently stale.
+        # The date stays for the end-of-day comparison STALE depends on.
+        #
+        # Suppressed entirely when the note is empty. "written just now" above an
+        # "(empty)" block reads as "you just wrote nothing", and an empty wake
+        # that had allowed correctly in production returned an error instead,
+        # twice out of twice. There is no age for a note that does not exist -
+        # the row's timestamp is from the write that cleared it.
+        short_written=(
+            (f", written {short_age}" + (f" on {short_written}" if short_written else "")
+             if short_age else
+             f", last written {short_written}" if short_written else "")
+            if short_memory.strip() else ""
+        ),
         # Only when there is something to promote - an empty note needs no
         # housekeeping turn, however old it is.
         stale=STALE if (short_written and short_written < today
                         and short_memory.strip()) else "",
+        aging=AGING if short_memory.strip() else "",
         short_memory=short_memory.strip() or "(empty)",
     )
 

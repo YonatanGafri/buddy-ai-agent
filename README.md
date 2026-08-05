@@ -31,12 +31,32 @@ Four exits: a decision, an agent error (no browsing event in the prompt), a
 deadline forcing one summarizing turn, and a stuck-agent fallback that allows
 rather than hanging the browser.
 
-Four tools, all reading the same Supabase the GUI's context panel shows:
+Five tools. Four read the same Supabase the GUI's context panel shows; the
+fifth reads the open web:
 
 - `read_calendar()` - what is due, and when
 - `read_todo_list()` - what is pending and what is done
 - `read_long_memory()` - what survives past today
 - `rewrite_memory(scope, text)` - overwrites `short` or `long`
+- `read_website(url)` - the page's `<title>` and meta description, nothing more
+
+`read_website` exists because the domain is not the page. A broadcaster hosts a
+physics podcast and a university hosts a sports section, so "it is an
+educational site" is a guess about the domain rather than a fact about the tab.
+The whole HTML stays inside the tool and two short strings come out, so a page
+costs the model a sentence rather than a document.
+
+The agent may ask for several tools in one turn:
+
+```json
+{"type":"tool_call","tools":[{"tool":"read_calendar","args":{}},
+                             {"tool":"read_todo_list","args":{}}]}
+```
+
+The system prompt and the examples are resent on every reasoning turn, so
+two reads in one turn cost one resend instead of two. The single-call shape is
+unchanged and still accepted. In the trace each tool remains its own step - a
+batch changes how many turns are paid for, not what the steps look like.
 
 Short memory is inlined in the system prompt every turn rather than fetched, so
 there is deliberately no tool that reads it. Given the choice, the model spent a
@@ -51,7 +71,7 @@ to escalate. Those are judgment, and the agent makes them.
 api/index.py        the four endpoints (Vercel loads one top-level app)
 api/agent/loop.py   the ReAct loop
 api/agent/prompts.py system prompt + few-shot examples
-api/agent/tools.py  the four tools
+api/agent/tools.py  the five tools
 api/agent/memory.py Supabase reads and writes
 api/agent/llm.py    OpenAI-compatible chat completions
 public/index.html   the GUI, a single self-contained bundle
@@ -99,8 +119,15 @@ runs but forgets everything between processes. Without an LLM endpoint it
 returns `status: "error"` - there are no mocked decisions anywhere, because a
 fabricated one is worse than a visible failure.
 
-`SUPABASE_SERVICE_KEY` is read server side only and never reaches the GUI. The
-browser talks to `/api/execute`, not to the database.
+`SUPABASE_SERVICE_KEY` is read server side only and never reaches the GUI.
+Every decision goes through `/api/execute`; the browser never writes.
+
+The context panel is the one exception, and it reads directly. It fetches
+`memory`, `calendar_events` and `todo_tasks` over PostgREST with a publishable
+key, so the panel shows the same rows the agent's tools read rather than a copy
+the server passes along. RLS allows `select` and nothing else - an insert comes
+back `42501 row-level security violation`, and there is no update or delete
+policy at all. See `supabase/schema.sql`.
 
 ## Deploying
 

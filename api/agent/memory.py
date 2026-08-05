@@ -118,5 +118,44 @@ def day_of(stamp: str | None) -> str | None:
         return str(stamp)[:10] or None
 
 
+def age_of(stamp: str | None) -> str | None:
+    """How long ago a note was written, in words - "74 minutes ago".
+
+    Computed here rather than left to the model, for the same reason day_of is:
+    the agent writes clock times into its own notes ("Locked netflix.com at
+    20:25") and `now` is printed at the top of every prompt, so everything
+    needed to notice an hour has passed is already in front of it. It does not
+    do the subtraction. A note reading "exam in an hour" was read back 65
+    minutes later and asserted to a student opening an unrelated site.
+
+    One age for the whole note, because that is what the row stores - a rewrite
+    restamps every line in it. The agent's own clock times inside the text are
+    what distinguish lines within a note; this catches the common case, where
+    the whole note is stale.
+    """
+    if not stamp:
+        return None
+    try:
+        written = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+    seconds = (datetime.now(timezone.utc) - written).total_seconds()
+    # Clock skew between Supabase and the runtime can make a fresh note look
+    # slightly future-dated. "in -2 minutes" is worse than saying nothing.
+    if seconds < 0:
+        return None
+    minutes = int(seconds // 60)
+    if minutes < 1:
+        return "just now"
+    if minutes < 60:
+        return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+    hours = minutes // 60
+    if hours < 24:
+        return f"{hours} hour{'s' if hours > 1 else ''} ago"
+    days = hours // 24
+    return f"{days} day{'s' if days > 1 else ''} ago"
+
+
 def today() -> str:
     return date.today().isoformat()
