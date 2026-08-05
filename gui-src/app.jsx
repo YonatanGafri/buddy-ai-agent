@@ -752,10 +752,13 @@ function App() {
             <textarea className="ask-box" value={ask} rows={3}
               placeholder="Tell Buddy what you opened - e.g. Opened youtube.com - 'lo-fi beats to study to'"
               onChange={(e) => setAsk(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) runAsk(); }} />
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runAsk(); } }} />
             <div className="ask-foot">
               <button className="run-btn" disabled={!ask.trim() || busy} onClick={runAsk}>
                 <Icon name="bolt" size={16} />{busy ? 'Running…' : 'Run Agent'}
+              </button>
+              <button className="run-btn" style={{marginLeft: '8px', background: 'var(--bg-card)', color: 'var(--ink)', border: '1px solid var(--ink-faint)'}} disabled={busy} onClick={() => runAgent('Waking up - you asked to check back.', { wake: true })}>
+                <Icon name="sparkle" size={16} />Wake Up
               </button>
             </div>
             <DecisionHistory answers={answers} />
