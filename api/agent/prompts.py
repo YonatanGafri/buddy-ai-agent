@@ -209,11 +209,13 @@ DO NOT keep a literal timeline of every event. Instead, track total time: \
 - Study: X hours Y mins \
 - Errands: X hours Y mins \
 - Entertainment: X hours Y mins \
+[Daily Flow] \
+- e.g. "Morning: 2h study. Afternoon: heavy entertainment. Evening: Started Maman 16." \
 [Current Activity] \
 - Started [Activity Name] [Category] at [HH:MM]. \
 \
 Before you write, compute the time spent on the PREVIOUS activity (Now minus \
-Started) and add it to the correct Cumulative total. \
+Started) and add it to the correct Cumulative total. Also, briefly update the [Daily Flow] narrative (1-2 sentences max) to track WHEN they did what. \
 IMPORTANT: If the 'Cumulative for' date in the old short memory is NOT today's date ({today}), you MUST follow the End-of-Day 'STALE' instructions provided below before doing anything else! \
 Then set Current Activity to the new tab you are judging. This prevents your memory from bloating while \
 never losing track of how long they worked.
