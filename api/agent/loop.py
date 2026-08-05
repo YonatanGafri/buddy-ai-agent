@@ -122,9 +122,7 @@ def _clean_decision(reply: dict) -> dict:
     action = reply.get("action")
     out = {"action": action, "url": (reply.get("url") or "").strip(), "message": (reply.get("message") or "").strip()}
     callback = reply.get("callback")
-    if action == "allow":
-        pass
-    elif isinstance(callback, (int, float)) and callback > 0:
+    if isinstance(callback, (int, float)) and callback > 0:
         out["callback"] = int(callback)
     elif action == "nudge":
         # A nudge without a callback is a wish: no wake ever fires and the
