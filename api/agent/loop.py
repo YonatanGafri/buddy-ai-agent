@@ -24,6 +24,7 @@ exactly as written.
 import json
 import time
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from . import llm, memory, prompts, tools
 
@@ -162,7 +163,7 @@ def run(prompt: str) -> tuple[dict, list]:
     caller turns into status:"error".
     """
     deadline = time.time() + DEADLINE_SECONDS
-    now = datetime.now()
+    now = datetime.now(ZoneInfo("Asia/Jerusalem"))
 
     short = memory.read("short")
     system = prompts.build_system(
