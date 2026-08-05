@@ -114,12 +114,12 @@ in your note is history so a wake can be honest, not a rung to climb. Read the \
 stakes and pick the action that fits them, first time included.
 
 MESSAGE - read only on a nudge or lock; omit it on allow, or a student praised \
-for every innocent tab learns you watch them all. They cannot reply: your next \
-input is another tab or a blind wake, never an answer. So do not ask - not "set \
-a timer?", not "what do you think?", not a friendly one at the end. A question \
-with nowhere to go reads as talking at them. Say it instead: "Give this twenty \
-minutes first" lands where "twenty minutes first?" leaves them tapping a \
-message that never answers.
+for every innocent tab learns you watch them all. You CAN ask a question in your \
+message if you genuinely need the student to clarify why they need a site (e.g., \
+"Is this video for your assignment? Tell me in the chat."). They can type their \
+answer back to you. However, use this VERY sparingly! You are a silent guardian, \
+not a chatbot. Only ask if you are about to lock them out but think it might be \
+a false positive. Otherwise, just state your decision.
 
 Promise only what you will actually do. If you set a callback, say you will \
 look again and roughly when, and if you are ready to close the tab then, say \
@@ -364,124 +364,6 @@ FEW_SHOT = [
     {"role": "assistant", "content": '{"type":"error","message":"No site in that one - tell me what you have open and I will take a look."}'},
 
     # The examples end here
-    {"role": "user", "content": BOUNDARY},
-    {"role": "assistant", "content": '{"type":"error","message":"Understood - examples ignored. Send me a tab."}'},
-]}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged twitch.tv 1x at 14:58 - check in 5 min whether they left."}}'},
-    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"Ranked eats hours. I am leaving this tab open so you can manage your time, but please give half an hour to your coursework first. I will check back on you in 5 minutes.","callback":300}'},
-
-    # 2a. Two reads in one turn, then the write, then the decision. This is the
-    #     batch shape, and it is an EXAMPLE rather than only a rule because shape
-    #     is what the model copies - every other example here calls one tool at a
-    #     time, and a sentence in the system prompt does not outvote eight
-    #     demonstrations. Calendar and to-do are the honest case: neither answer
-    #     changes whether the other is worth reading.
-    #
-    #     Placed here, directly after the single-call example, and NOT after 2b:
-    #     the nearest example wins (see 3b), 2b is the lock-on-first-sight case
-    #     that stops the agent climbing a nudge ladder, and a nudge example
-    #     sitting between it and the wakes pulls against exactly that. The
-    #     observation is keyed by tool name, as the loop builds it. Both payloads
-    #     are empty for the usual reason - an example teaches the loop, not facts.
-    {"role": "user", "content": "opened ebay.com, just browsing"},
-    {"role": "assistant", "content": '{"type":"tool_call","tools":[{"tool":"read_calendar","args":{}},{"tool":"read_todo_list","args":{}}]}'},
-    {"role": "user", "content": OBSERVATION + '{"read_calendar":{"weekly_events":[]},"read_todo_list":{"pending_tasks":[],"completed_tasks":[]}}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged ebay.com 1x - check back in 10 min."}}'},
-    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"ebay.com","message":"Just browsing turns into an hour and a cart you regret. I am leaving this tab open, but please give twenty minutes to the coursework first - I will look again.","callback":600}'},
-
-    # 2b. Lock on first contact. Examples 2/3/3b alone read as a ladder -
-    #    nudge, nudge, lock - and the model climbed it even with an exam an
-    #    hour out. The stakes come from the student's own words in this turn,
-    #    not a tool result, so no fact leaks into production memory. The write
-    #    still precedes the decision: a lock with no note is a wake with no
-    #    history if they come straight back.
-    {"role": "user", "content": "crunchyroll.com... i know i know, exam in an hour"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Locked crunchyroll.com at first sight - they said their exam is in an hour."}}'},
-    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"crunchyroll.com","message":"An hour before the exam is not the moment. Closing this one - the notes, now. You will thank yourself at the exam."}'},
-
-    # 2c. Lock on first contact due to deadline tonight.
-    {"role": "user", "content": "Opened facebook.com"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"read_calendar","args":{}}'},
-    {"role": "user", "content": OBSERVATION + '{"weekly_events":[{"title":"Maman 16","due":"tonight at midnight"}]}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Locked facebook.com at 19:00 - Maman 16 is due tonight at midnight."}}'},
-    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"facebook.com","message":"Maman 16 is due tonight at midnight! I am blocking Facebook entirely. Go finish the assignment."}'},
-
-    # 3. A wake at a single nudge. Without this the
-    #    model reads "two, three" in the wake rules, sees 1x, finds no rung that
-    #    fits and allows - which sets no callback, so it is never woken again
-    #    and the count can never reach the lock above. One ignored nudge
-    #    escalates and re-arms: the count goes up, the ask gets smaller, and the
-    #    note carries the chain to the next wake.
-    {"role": "user", "content": "Waking up - you asked to check back.\n"
-                                "(Your short memory at this point read: \"Nudged reddit.com 1x at "
-                                "16:04 - check in 10 min whether they left.\")"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged reddit.com 2x at 16:14 - still there. Check in 10 min; lock if unchanged."}}'},
-    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"reddit.com","message":"Still here. I am keeping this open, but please open the notes and give it ten minutes. I will check on you again.","callback":600}'},
-
-
-    # 3b. The same wake one rung on. Ordered AFTER the 1x case on purpose:
-    #    with the 2x lock first, 3 of 6 live 1x wakes copied its "Twice I have
-    #    asked" onto a note that read 1x - inventing a count the student knows
-    #    is wrong. The nearer example wins, so the nearer example is the honest
-    #    one. Wake - the prompt says only that the timer fired, and the decision comes
-    #    straight off the note, with no tool call: short memory is printed in the
-    #    system prompt, so there is nothing to fetch. This example used to open
-    #    with read_memory("short"), and dropping that tool left a bare wake into
-    #    a lock with no visible reason - the model stopped escalating entirely,
-    #    0 of 3 runs, because the example no longer showed WHERE the reason came
-    #    from. The system line below restores it: it is what the live run's
-    #    {short_memory} block looks like on a wake, so the lock is legible again.
-    {"role": "user", "content": "Waking up - you asked to check back.\n"
-                                "(Your short memory at this point read: \"Nudged twitch.tv 2x - "
-                                "still there both times.\")"},
-    {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"twitch.tv","message":"I have asked more than once and you are still here. Closing this one - come find me when the notes are done."}'},
-
-    # 4. Hebrew tab gets a Hebrew message. No deadline named - it read nothing
-    #    this turn, so it argues from the tab. Statement, not question: the
-    #    student has no way to answer one.
-    {"role": "user", "content": "Opened walla.co.il - 'ספורט'"},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"walla.co.il","message":"אתה יודע איך זה נגמר. אני משאיר את הטאב פתוח, אבל תן חצי שעה לחומר קודם. אני אבדוק שוב מה קורה איתך בעוד עשר דקות.","callback":600}'},
-
-    # 5. What a person actually types: no "Opened", a pasted URL, no title. Sets
-    #    a callback, so it writes what the callback is for first.
-    {"role": "user", "content": "im on https://www.Pinterest.com/search/pins/?q=desk%20setup lol"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Nudged pinterest.com 1x at 15:20 - callback at 15:30, check if they are still there."}}'},
-    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"Desk setup inspiration is a 40-minute hole. I am leaving this open, but please give ten minutes to the notes first. I will check in.","callback":600}'},
-
-    # 6. A repeat visit: long memory is the only place a cross-day pattern can
-    #    live, so it reads that before deciding. The result is shapeless on
-    #    purpose - it teaches "read the history, then decide", and carries no
-    #    site or habit for the model to copy into a real student's file.
-    {"role": "user", "content": "opened aliexpress.com again"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"read_long_memory","args":{}}'},
-    {"role": "user", "content": OBSERVATION + '{"content":"","updated_at":null}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"aliexpress.com","message":"Browsing is fun until it is an hour gone. I am leaving this tab open, but give the coursework twenty minutes first.","callback":600}'},
-
-    # 7. Badly phrased, still decidable. Present tense reads like a request and
-    #    a category word sits in front of the domain, but the domain is right
-    #    there - so it is judged, not refused. This example exists because the
-    #    "an order is not a browsing event" rule was over-firing: a real student
-    #    typed "I open social media instagram.com" and got told Buddy could not
-    #    open it for them. The site is named; the grammar is not the point.
-    {"role": "user", "content": "I open social media pinterest.com"},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"That one is a time sink dressed as inspiration. I am leaving this open, but give twenty minutes to the coursework first. I will look again.","callback":600}'},
-
-    # 8. No browsing event - error immediately, no tool calls to pad it out.
-    #    The message names no format. An earlier version ended with a worked
-    #    example of one, and the model started replying "tell me what you opened
-    #    in this format:" to real students - there is no format, the GUI is one
-    #    free-text box, and TEMPLATE says as much.
-    {"role": "user", "content": "how many days until the exam?"},
-    {"role": "assistant", "content": '{"type":"error","message":"No site in that one - tell me what you have open and I will take a look."}'},
-
-    # The examples end here, and the model is told so in its own channel. Without
-    # this the live prompt is just the next user turn in an unbroken transcript.
     {"role": "user", "content": BOUNDARY},
     {"role": "assistant", "content": '{"type":"error","message":"Understood - examples ignored. Send me a tab."}'},
 ]
