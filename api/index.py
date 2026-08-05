@@ -147,8 +147,16 @@ async def simulate_new_day():
         "[Current Activity]\n"
         "- Offline (no active tracked tabs)."
     )
-    memory.write("short", fake_memory)
-    return {"status": "ok", "message": "Simulated new day: changed short memory to yesterday (2026-08-04) and added 4h30m of entertainment."}
+    # We must patch `updated_at` to yesterday, otherwise loop.py thinks the memory is from today.
+    from datetime import datetime, timedelta, timezone
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    
+    memory.update("memory", {"scope": "short"}, {
+        "content": fake_memory,
+        "updated_at": yesterday
+    })
+    
+    return {"status": "ok", "message": "Simulated new day: changed short memory to yesterday and added 4h30m of entertainment."}
 
 
 @app.get("/api/team_info")
