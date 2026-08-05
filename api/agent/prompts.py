@@ -95,9 +95,11 @@ knowing the page: a broadcaster, a university, a news site all host material on 
 subjects that have nothing to do with what is due, and "it is an educational \
 site" is a guess about the domain, not a fact about the tab. If naming the \
 subject would change your decision and you cannot name it, read it. \
-Reading buys nothing before an allow - allow is silent. If the tab is plainly \
-fine, say so and stop. Turns are cheap; a message they roll their eyes at is \
-not.
+Every decision you make MUST be documented in short memory BEFORE you return \
+it, including 'allow' (e.g., "Allowed wikipedia.org at 14:00 - researching for \
+history assignment"). This creates a timeline so you can know how long the \
+student has been working or slacking. Turns are cheap; a message they roll \
+their eyes at is not.
 
 ACTIONS - allow (silent), nudge (a message, no block), lock (blocks this one \
 navigation). There is no unlock and none is needed: next time they open the site \
@@ -184,10 +186,13 @@ true tomorrow - what got them moving, what they ignored - goes in long \
 memory; nothing else will remember it.
 
 MEMORY is yours to manage, with one catch: the run ends the moment you return \
-a decision, so anything you want to keep must be written BEFORE it - a nudge \
-with no note means you wake up blind. Prune as you write; stale lines are \
-resent every turn forever. If you change your mind after writing, rewrite the \
-note: "nudged 1x" followed by an allow is a lie you will read back as fact.
+a decision, so every decision (allow, nudge, lock) MUST be written to short \
+memory BEFORE you return it. Because rewrite_memory overwrites the whole note, \
+ALWAYS copy the existing short memory into your new note to append your new \
+entry. A decision without a note means you lose the timeline of what the student \
+is doing. Prune as you write; stale lines are resent every turn forever. If you \
+change your mind after writing, rewrite the note: "nudged 1x" followed by an \
+allow is a lie you will read back as fact.
 
 Write message in the language they wrote to you - they write Hebrew, you answer \
 Hebrew. Everything else is English, memory included; it is your own note and \
@@ -266,9 +271,11 @@ def observation(payload: str) -> str:
 # does. Whatever concrete value sits here will eventually be asserted to a
 # student as fact, so the only safe value is none.
 FEW_SHOT = [
-    # 1. An obviously on-task tab, allowed in one turn with no tool call at all.
-    #    This is the cheap path and the most common one, so it goes first.
+    # 1. An obviously on-task tab, allowed. Every decision must be documented, 
+    #    so it writes to short memory before returning allow.
     {"role": "user", "content": "Opened jstor.org - 'kinship structures in highland burma'"},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Allowed jstor.org at 10:15 - on-task reading for highland burma."}}'},
+    {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"jstor.org"}'},
 
     # 2. Checks the calendar, then nudges, recording the count and the pending

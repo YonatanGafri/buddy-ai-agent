@@ -16,8 +16,10 @@ claimed to show "what Buddy knows" and did not. The JSON files are now seed inpu
 for scripts/seed.py, nothing more.
 """
 import html as _html
+import json
 import re
 import urllib.request
+import urllib.parse
 
 from . import memory
 
@@ -75,11 +77,25 @@ def read_website(url: str = "") -> dict:
         return {"error": "read_website needs a url"}
     if not re.match(r"^https?://", url, re.I):
         url = "https://" + url
+
+    if "youtube.com" in url.lower() or "youtu.be" in url.lower():
+        oembed_url = f"https://www.youtube.com/oembed?url={urllib.parse.quote(url)}&format=json"
+        try:
+            req = urllib.request.Request(oembed_url, headers={"User-Agent": "Mozilla/5.0 (Buddy)"})
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return {
+                    "title": data.get("title"),
+                    "description": f"Channel: {data.get('author_name')}"
+                }
+        except Exception as exc:
+            return {"error": f"could not fetch youtube oembed: {str(exc)[:200]}"}
+
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Buddy)"})
         with urllib.request.urlopen(req, timeout=5) as resp:
-            # ponytail: first 64KB only - title/meta live in <head>; full pages can be MBs
-            raw = resp.read(65536).decode("utf-8", errors="replace")
+            # ponytail: first 128KB only - title/meta live in <head>; full pages can be MBs
+            raw = resp.read(131072).decode("utf-8", errors="replace")
     except Exception as exc:
         return {"error": f"could not fetch {url}: {str(exc)[:200]}"}
 
