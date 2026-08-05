@@ -137,6 +137,18 @@ async def complete_task(body: dict | None = None):
         
     res = tools.update_todo_status(task_name, "completed")
     return {"status": "ok", "result": res}
+@app.post("/api/simulate_new_day")
+async def simulate_new_day():
+    fake_memory = (
+        "[Cumulative for 2026-08-04]\n"
+        "- Study: 0 mins\n"
+        "- Errands: 0 mins\n"
+        "- Entertainment: 4 hours 30 mins\n"
+        "[Current Activity]\n"
+        "- Offline (no active tracked tabs)."
+    )
+    memory.write("short", fake_memory)
+    return {"status": "ok", "message": "Simulated new day: changed short memory to yesterday (2026-08-04) and added 4h30m of entertainment."}
 
 
 @app.get("/api/team_info")

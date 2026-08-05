@@ -423,10 +423,11 @@ TEMPLATE = (
 # deadline cut it off. A fixed prompt cannot see what the agent just did, so it
 # has to say so.
 STALE = (
-    "That note is from an earlier day. Before judging the tab, move anything "
-    "still worth keeping into long memory and rewrite short to clear it - once. "
-    "This line is fixed for the whole run and cannot tell that you have already "
-    "done it, so if you have, ignore it and decide.\n"
+    "That note is from an earlier day. Before judging the tab, you MUST do the following in order:\n"
+    "1. Call `read_long_memory()` to see the student's existing habits.\n"
+    "2. Move any new patterns or habits from yesterday's short memory into the long memory using `rewrite_memory` (appending to what was already there).\n"
+    "3. Rewrite short memory to clear it and reset all Cumulative totals to 0 for today.\n"
+    "This line is fixed for the whole run, so if you have already done this, ignore it and decide on the tab.\n"
 )
 
 # Shown only when there IS a note. The first version printed unconditionally and
