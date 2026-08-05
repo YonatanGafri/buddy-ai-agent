@@ -85,18 +85,30 @@ def read_website(url: str = "") -> dict:
     if not re.match(r"^https?://", url, re.I):
         url = "https://" + url
 
-    if "youtube.com" in url.lower() or "youtu.be" in url.lower():
+    domain = url.lower()
+    oembed_url = None
+    if "youtube.com" in domain or "youtu.be" in domain:
         oembed_url = f"https://www.youtube.com/oembed?url={urllib.parse.quote(url)}&format=json"
+    elif "spotify.com" in domain:
+        oembed_url = f"https://open.spotify.com/oembed?url={urllib.parse.quote(url)}"
+    elif "vimeo.com" in domain:
+        oembed_url = f"https://vimeo.com/api/oembed.json?url={urllib.parse.quote(url)}"
+    elif "tiktok.com" in domain:
+        oembed_url = f"https://www.tiktok.com/oembed?url={urllib.parse.quote(url)}"
+    elif "soundcloud.com" in domain:
+        oembed_url = f"https://soundcloud.com/oembed?url={urllib.parse.quote(url)}&format=json"
+        
+    if oembed_url:
         try:
             req = urllib.request.Request(oembed_url, headers={"User-Agent": "Mozilla/5.0 (Buddy)"})
             with urllib.request.urlopen(req, timeout=5) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return {
                     "title": data.get("title"),
-                    "description": f"Channel: {data.get('author_name')}"
+                    "description": f"Author/Channel: {data.get('author_name', 'Unknown')}"
                 }
         except Exception as exc:
-            return {"error": f"could not fetch youtube oembed: {str(exc)[:200]}"}
+            return {"error": f"could not fetch oembed: {str(exc)[:200]}"}
 
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Buddy)"})
