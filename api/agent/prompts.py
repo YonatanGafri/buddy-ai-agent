@@ -432,7 +432,7 @@ TEMPLATE = (
 STALE = (
     "That note is from an earlier day. Before judging the tab, you MUST do the following in order:\n"
     "1. Call `read_long_memory()` to see the student's existing habits.\n"
-    "2. Analyze yesterday's short memory (time spent on Study vs Entertainment) and check the to-do list for completed tasks. SYNTHESIZE this new information with the existing long memory to create a single, updated, unified psychological profile of the student's habits (e.g. what times they study best, how easily they get distracted, task completion rates). Overwrite the long memory with this new unified profile using `rewrite_memory` (scope: 'long'). DO NOT just append new sentences, and DO NOT copy-paste raw numbers. Replace it entirely with your synthesized analysis.\n"
+    "2. Analyze yesterday's short memory (time spent on Study vs Entertainment) and check the to-do list for completed tasks. SYNTHESIZE this new information with the existing long memory to create a single, updated, unified psychological profile of the student's habits (e.g. what times they study best, how easily they get distracted, task completion rates). Overwrite the long memory with this new unified profile using `rewrite_memory` (scope: 'long'). IMPORTANT: You MUST write the synthesized profile exclusively in ENGLISH, regardless of the language of the inputs. DO NOT just append new sentences, and DO NOT copy-paste raw numbers. Replace it entirely with your synthesized analysis.\n"
     "3. Rewrite short memory to clear it and reset all Cumulative totals to 0 for today.\n"
     "This line is fixed for the whole run, so if you have already done this, ignore it and decide on the tab.\n"
 )
