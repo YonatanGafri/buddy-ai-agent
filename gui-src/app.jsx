@@ -46,6 +46,14 @@ document.head.appendChild(document.createElement('style')).textContent = `
   .left .ask { flex: 0 0 auto; }
   .browser-head { padding: 13px 18px 12px; }
 
+  .tab-close {
+    background: transparent; border: none; color: var(--ink-faint); font-size: 16px; 
+    cursor: pointer; padding: 0 8px; align-self: center; margin-left: auto;
+  }
+  .tab-close:hover { color: var(--ink); }
+  .ctx-dot-clickable { cursor: pointer; }
+  .ctx-dot-clickable:hover { border-color: var(--ink); background: var(--ink-faint); }
+
   /* Bigger type throughout. The generated sheet was drawn for a denser layout;
      these are the text elements a person actually reads, nudged up one step. */
   .browser-head h2 { font-size: 17px; }
@@ -270,7 +278,7 @@ function TabTimers({ since, due }) {
   );
 }
 
-function CurrentTab({ tab, busy }) {
+function CurrentTab({ tab, busy, onClose }) {
   if (!tab) {
     return (
       <div className="tab-empty">
@@ -287,6 +295,7 @@ function CurrentTab({ tab, busy }) {
         <div className="row-title" dir={heDir(tab.label)}>{tab.label}</div>
         <TabTimers since={tab.since} due={tab.due} />
       </div>
+      <button className="tab-close" onClick={onClose} title="Close tab">✕</button>
       {tab.action === 'lock'
         ? <span className="blocked-pill"><Icon name="lock" size={12} />Blocked</span>
         : <span className={'answer-badge ' + tab.action}>{TAB_COPY[tab.action] || 'Open'}</span>}
@@ -297,7 +306,7 @@ function CurrentTab({ tab, busy }) {
 /* ---- context panel: memory + calendar + todo, from the backend ----
    There is no local copy of this data any more, so an unreachable Supabase
    renders as "unreachable" and not as a student with an empty calendar. */
-function ContextPanel({ ctx }) {
+function ContextPanel({ ctx, onCompleteTask }) {
   if (!ctx) {
     return <div className="ctx"><div className="ctx-load">Loading context…</div></div>;
   }
@@ -335,7 +344,7 @@ function ContextPanel({ ctx }) {
             <span className="ctx-count">{ctx.todo.pending.length} open</span>
           </div>
           {ctx.todo.pending.map((t, i) => (
-            <div className="ctx-item" key={i}><span className="ctx-dot" />{t}</div>
+            <div className="ctx-item" key={i}><span className="ctx-dot ctx-dot-clickable" onClick={() => onCompleteTask(t)} title="Mark complete" />{t}</div>
           ))}
           {ctx.todo.completed.map((t, i) => (
             <div className="ctx-item done" key={'c' + i}><span className="ctx-check">✓</span>{t}</div>
@@ -687,6 +696,18 @@ function App() {
     });
   }, [pushLog, showNudge]);
 
+
+  const closeTab = useCallback(() => {
+    if (!tabRef.current) return;
+    setTab(null);
+    clearTimeout(cbTimer.current);
+    apiCloseTab().then(() => fetchContext().then(setCtx));
+  }, []);
+
+  const completeTask = useCallback((taskName) => {
+    apiCompleteTask(taskName).then(() => fetchContext().then(setCtx));
+  }, []);
+
   /* The only input surface there is. */
   const runAsk = useCallback(() => {
     const text = ask.trim();
@@ -720,7 +741,7 @@ function App() {
               <h2>Current tab</h2>
             </div>
             <div className="tablist">
-              <CurrentTab tab={tab} busy={busy && !tab} />
+              <CurrentTab tab={tab} busy={busy && !tab} onClose={closeTab} />
             </div>
           </section>
 
@@ -747,7 +768,7 @@ function App() {
               <h3>Agent context</h3>
             </div>
           </div>
-          <ContextPanel ctx={ctx} />
+          <ContextPanel ctx={ctx} onCompleteTask={completeTask} />
         </aside>
 
         <aside className="brain brain-log">

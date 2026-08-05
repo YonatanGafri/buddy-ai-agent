@@ -121,6 +121,31 @@ async function runExecute(prompt) {
   }
 }
 
+
+async function apiCloseTab() {
+  const url = '/api/close_tab';
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return await r.json();
+  } catch (e) {
+    console.error('close_tab failed:', e.message);
+    return null;
+  }
+}
+
+async function apiCompleteTask(taskName) {
+  const url = '/api/complete_task';
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ task_name: taskName }) });
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return await r.json();
+  } catch (e) {
+    console.error('complete_task failed:', e.message);
+    return null;
+  }
+}
+
 /* favicon-style letter avatar color, derived from domain */
 function faviconColor(domain) {
   let h = 0;
@@ -133,5 +158,5 @@ function initial(domain) {
 }
 
 Object.assign(window, {
-  BUDDY_CONFIG, fetchContext, runExecute, faviconColor, initial,
+  BUDDY_CONFIG, fetchContext, runExecute, apiCloseTab, apiCompleteTask, faviconColor, initial,
 });

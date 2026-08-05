@@ -68,6 +68,73 @@ async def execute(body: dict | None = None):
     return {"status": "ok", "error": None, "response": result, "steps": steps}
 
 
+
+from .agent import memory
+from .agent import tools
+import re
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+@app.post("/api/close_tab")
+async def close_tab():
+    now = datetime.now(ZoneInfo("Asia/Jerusalem"))
+    now_str = now.strftime("%H:%M")
+    
+    short = memory.read("short")
+    short_content = short.get("content", "")
+    
+    activity_match = re.search(r'\[Current Activity\]\s*- Started (.*?) at (\d{2}:\d{2})\.', short_content, flags=re.DOTALL)
+    if not activity_match:
+        return {"status": "ok", "message": "Already offline or time not parsable"}
+        
+    activity_desc = activity_match.group(1).lower()
+    start_time_str = activity_match.group(2)
+    
+    now_time = datetime.strptime(now_str, "%H:%M")
+    start_time = datetime.strptime(start_time_str, "%H:%M")
+    
+    if now_time < start_time:
+        elapsed_mins = ((now_time.hour + 24) * 60 + now_time.minute) - (start_time.hour * 60 + start_time.minute)
+    else:
+        elapsed_mins = (now_time.hour * 60 + now_time.minute) - (start_time.hour * 60 + start_time.minute)
+        
+    if elapsed_mins < 0:
+        elapsed_mins = 0
+        
+    category = "Study"
+    if any(k in activity_desc for k in ["entertainment", "music", "video", "facebook", "youtube"]):
+        category = "Entertainment"
+    elif any(k in activity_desc for k in ["errand", "mail", "bank"]):
+        category = "Errands"
+        
+    pattern = rf'- {category}: (?:(\d+) hours? )?(\d+) mins'
+    
+    def replacer(match):
+        hours = int(match.group(1)) if match.group(1) else 0
+        mins = int(match.group(2))
+        total_mins = hours * 60 + mins + elapsed_mins
+        new_hours = total_mins // 60
+        new_mins = total_mins % 60
+        if new_hours > 0:
+            return f"- {category}: {new_hours} hour{'s' if new_hours > 1 else ''} {new_mins} mins"
+        return f"- {category}: {new_mins} mins"
+            
+    new_memory = re.sub(pattern, replacer, short_content)
+    new_memory = re.sub(r'\[Current Activity\].*', f'[Current Activity]\n- Offline (no active tracked tabs).', new_memory, flags=re.DOTALL)
+    
+    memory.write("short", new_memory)
+    return {"status": "ok", "message": f"Closed tab, added {elapsed_mins} mins to {category}"}
+
+@app.post("/api/complete_task")
+async def complete_task(body: dict | None = None):
+    task_name = (body or {}).get("task_name")
+    if not task_name:
+        return _error("Missing 'task_name'. Send {\"task_name\": \"...\"}.")
+        
+    res = tools.update_todo_status(task_name, "completed")
+    return {"status": "ok", "result": res}
+
+
 @app.get("/api/team_info")
 async def team_info():
     return {
