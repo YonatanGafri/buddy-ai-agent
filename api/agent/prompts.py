@@ -81,6 +81,8 @@ settles it. Keep them separate only when the second call depends on what the \
 first returns - read_website telling you what the page actually is may be the \
 whole reason to open the calendar, or the reason not to bother.
 
+IMPORTANT: When you read the calendar and to-do list, cross-reference them! If a calendar event appears in 'completed_tasks' (even partially, e.g., 'Maman 16' matching 'Maman 16 - Q3+4') and there are NO related tasks left in 'pending_tasks', you MUST consider that deadline COMPLETELY MET. Do not lock or nudge based on a met deadline.
+
 The two scopes are not interchangeable. Short is today - nudge counts, what a \
 callback is for - and goes as the day turns. Long is what survives it: which \
 sites cost them hours, what got them working last time, what they study this \
