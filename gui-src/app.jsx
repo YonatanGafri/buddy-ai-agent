@@ -235,7 +235,25 @@ function Markdown({ text }) {
   return <div className="md">{blocks}</div>;
 }
 
-function heDir(s) { return /[֐-׿]/.test(s) ? 'rtl' : 'ltr'; }
+/* Which way to lay a string out, by which script owns most of its letters.
+
+   Not "contains a Hebrew character": the agent writes English messages that cite
+   Hebrew task names ("ממן 16 is due today and reddit is a distraction"), and a
+   contains-test flips the whole line, so it renders as ".help planning the sprint".
+   Nor dir="auto", which is first-strong - that same line opens on ממן and would
+   still come out rtl.
+
+   Counting is what separates the two: a few Hebrew words inside an English
+   sentence stay ltr, an English domain inside a Hebrew sentence stays rtl.
+   first-strong only breaks the tie, which is where it is actually the right rule. */
+function heDir(s) {
+  const t = String(s || '');
+  const he = (t.match(/[֐-׿]/g) || []).length;
+  const en = (t.match(/[A-Za-z]/g) || []).length;
+  if (he !== en) return he > en ? 'rtl' : 'ltr';
+  const first = t.match(/[֐-׿]|[A-Za-z]/);
+  return first && /[֐-׿]/.test(first[0]) ? 'rtl' : 'ltr';
+}
 
 /* Drop a leading "# ..." from a memory blob for display only. The row is already
    labelled short / long, so its own title is the same word twice. Display only -
@@ -531,9 +549,20 @@ function summarize(kind, v) {
     return { text: `${msgs.length} messages, last: ${body}`, detail: v };
   }
   // A tool call: name and arguments read better than the envelope.
+  //
+  // Two shapes reach here. The single form is {tool, args}; the batched form the
+  // loop emits is {type:"tool_call", tools:[{tool, args}, ...]} - plural, with no
+  // top-level `tool`. Reading v.tool on a batch yields undefined and the line
+  // rendered as "undefined({})", so render each call in the batch instead.
+  const callText = (c) => {
+    const args = c && c.args && Object.keys(c.args).length ? JSON.stringify(c.args) : '';
+    return `${(c && c.tool) || '?'}(${args})`;
+  };
+  if (Array.isArray(v.tools) && v.tools.length) {
+    return { text: v.tools.map(callText).join(', '), detail: v };
+  }
   if (v.tool) {
-    const args = v.args && Object.keys(v.args).length ? JSON.stringify(v.args) : '';
-    return { text: `${v.tool}(${args})`, detail: v };
+    return { text: callText(v), detail: v };
   }
   // A decision, the thing the whole run exists to produce.
   if (v.type === 'decision' || v.action) {
@@ -541,8 +570,9 @@ function summarize(kind, v) {
     const cb = v.callback ? ` · re-check ${v.callback}s` : '';
     return { text: `${bits}${cb}${v.message ? ` · "${v.message}"` : ''}`, detail: v };
   }
+  // A tool_call envelope that carried neither `tool` nor a non-empty `tools`.
   if (v.type === 'tool_call') {
-    return { text: `${v.tool}(${JSON.stringify(v.args || {})})`, detail: v };
+    return { text: callText(v), detail: v };
   }
   if (v.type === 'error' || v.error) return { text: v.message || v.error, detail: v };
   if (v.raw) return { text: v.raw, detail: v };          // unparseable model output

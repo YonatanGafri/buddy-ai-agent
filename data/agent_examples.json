@@ -562,5 +562,451 @@
         }
       }
     ]
+  },
+  {
+    "prompt": "opened instagram.com - just scrolling reels for a bit",
+    "full_response": {
+      "status": "ok",
+      "error": null,
+      "response": {
+        "action": "lock",
+        "url": "instagram.com",
+        "message": "Maman 16 is in progress and social media is a high-risk distraction for you. I'm blocking instagram.com now so you can finish the assignment — focus on a 30–45 minute work block and tell me when you've finished or what you're opening next."
+      }
+    },
+    "steps": [
+      {
+        "module": "ReAct.LLM",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "(system prompt - see prompt_template)"
+            },
+            {
+              "role": "system",
+              "content": "(few-shot examples - 24 turns)"
+            },
+            {
+              "role": "user",
+              "content": "opened instagram.com - just scrolling reels for a bit"
+            }
+          ]
+        },
+        "response": {
+          "type": "tool_call",
+          "tools": [
+            {
+              "tool": "read_long_memory",
+              "args": {}
+            },
+            {
+              "tool": "read_website",
+              "args": {
+                "url": "instagram.com"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "module": "Tools.read_long_memory",
+        "prompt": {
+          "tool": "read_long_memory",
+          "args": {}
+        },
+        "response": {
+          "content": "Status and profile: Student is currently working on Maman 16 (in progress). Recent pattern: the student often spends long evening blocks on entertainment and recorded very little study yesterday, so they are vulnerable to distraction when deadlines are near. Task completion: mixed — some course work gets finished but several important tasks remain pending (guided practice - Data Structures due 2026-08-06; Financial Management midterm prep due 2026-08-12; AI agents final project due 2026-08-23; slides for AI-agent presentation, Chapter 7 reading, practice Financial Management questions, course registration, meeting with seminar adviser). Cognitive/behavioral notes: the student responds best to short, structured study blocks (25–45 minutes) with scheduled breaks and proactive check-ins. High-risk triggers: social media, streaming, and shopping sites reliably pull hours away. Effective interventions: use timed nudges/callbacks for entertainment sites, lock or firmly block distracting sites near due dates, and prompt immediate short focused sessions when a deadline is due. Recommendation: prioritize urgent deadlines (Maman 16 tonight) with strict boundaries; use 30–45 minute focused blocks and 10–15 minute breaks to prevent burnout.",
+          "updated_at": "2026-08-05T16:02:59.521797+00:00"
+        }
+      },
+      {
+        "module": "Tools.read_website",
+        "prompt": {
+          "tool": "read_website",
+          "args": {
+            "url": "instagram.com"
+          }
+        },
+        "response": {
+          "title": "Instagram",
+          "description": "Create an account or log in to Instagram - Share what you're into with the people who get you."
+        }
+      },
+      {
+        "module": "ReAct.LLM",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "(system prompt - see prompt_template)"
+            },
+            {
+              "role": "system",
+              "content": "(few-shot examples - 24 turns)"
+            },
+            {
+              "role": "user",
+              "content": "opened instagram.com - just scrolling reels for a bit"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"content\": \"Status and profile: Student is currently working on Maman 16 (in progress). Recent pattern: the student often spends long evening blocks on entertainment and recorded very little study yesterday, so they are vulnerable to distraction when deadlines are near. Task completion: mixed — some course work gets finished but several important tasks remain pending (guided practice - Data Structures due 2026-08-06; Financial Management midterm prep due 2026-08-12; AI agents final project due 2026-08-23; slides for AI-agent presentation, Chapter 7 reading, practice Financial Management questions, course registration, meeting with seminar adviser). Cognitive/behavioral notes: the student responds best to short, structured study blocks (25–45 minutes) with scheduled breaks and proactive check-ins. High-risk triggers: social media, streaming, and shopping sites reliably pull hours away. Effective interventions: use timed nudges/callbacks for entertainment sites, lock or firmly block distracting sites near due dates, and prompt immediate short focused sessions when a deadline is due. Recommendation: prioritize urgent deadlines (Maman 16 tonight) with strict boundaries; use 30–45 minute focused blocks and 10–15 minute breaks to prevent burnout.\", \"updated_at\": \"2026-08-05T16:02:59.521797+00:00\"}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"title\": \"Instagram\", \"description\": \"Create an account or log in to Instagram - Share what you're into with the people who get you.\"}"
+            }
+          ]
+        },
+        "response": {
+          "type": "tool_call",
+          "tool": "rewrite_memory",
+          "args": {
+            "scope": "short",
+            "text": "[Cumulative for 2026-08-05]\n- Study: 7 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Daily Flow]\n- Evening: began Maman 16 work and opened YouTube for study music. Started thesis outline on Notion; attempted to open Instagram and it was blocked to protect study focus.\n[Current Activity]\n- Locked instagram.com at 19:09 (Maman 16 in progress; social media is a high-risk distraction)."
+          }
+        }
+      },
+      {
+        "module": "Tools.rewrite_memory",
+        "prompt": {
+          "tool": "rewrite_memory",
+          "args": {
+            "scope": "short",
+            "text": "[Cumulative for 2026-08-05]\n- Study: 7 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Daily Flow]\n- Evening: began Maman 16 work and opened YouTube for study music. Started thesis outline on Notion; attempted to open Instagram and it was blocked to protect study focus.\n[Current Activity]\n- Locked instagram.com at 19:09 (Maman 16 in progress; social media is a high-risk distraction)."
+          }
+        },
+        "response": {
+          "ok": true
+        }
+      },
+      {
+        "module": "ReAct.LLM",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "(system prompt - see prompt_template)"
+            },
+            {
+              "role": "system",
+              "content": "(few-shot examples - 24 turns)"
+            },
+            {
+              "role": "user",
+              "content": "opened instagram.com - just scrolling reels for a bit"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"content\": \"Status and profile: Student is currently working on Maman 16 (in progress). Recent pattern: the student often spends long evening blocks on entertainment and recorded very little study yesterday, so they are vulnerable to distraction when deadlines are near. Task completion: mixed — some course work gets finished but several important tasks remain pending (guided practice - Data Structures due 2026-08-06; Financial Management midterm prep due 2026-08-12; AI agents final project due 2026-08-23; slides for AI-agent presentation, Chapter 7 reading, practice Financial Management questions, course registration, meeting with seminar adviser). Cognitive/behavioral notes: the student responds best to short, structured study blocks (25–45 minutes) with scheduled breaks and proactive check-ins. High-risk triggers: social media, streaming, and shopping sites reliably pull hours away. Effective interventions: use timed nudges/callbacks for entertainment sites, lock or firmly block distracting sites near due dates, and prompt immediate short focused sessions when a deadline is due. Recommendation: prioritize urgent deadlines (Maman 16 tonight) with strict boundaries; use 30–45 minute focused blocks and 10–15 minute breaks to prevent burnout.\", \"updated_at\": \"2026-08-05T16:02:59.521797+00:00\"}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"title\": \"Instagram\", \"description\": \"Create an account or log in to Instagram - Share what you're into with the people who get you.\"}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"ok\": true}"
+            }
+          ]
+        },
+        "response": {
+          "type": "decision",
+          "action": "lock",
+          "url": "instagram.com",
+          "message": "Maman 16 is in progress and social media is a high-risk distraction for you. I'm blocking instagram.com now so you can finish the assignment — focus on a 30–45 minute work block and tell me when you've finished or what you're opening next."
+        }
+      }
+    ]
+  },
+  {
+    "prompt": "I just finished the slides for the AI agent presentation. Opened notion.so to start the next task.",
+    "full_response": {
+      "status": "ok",
+      "error": null,
+      "response": {
+        "action": "allow",
+        "url": "notion.so",
+        "message": "I see this is a study/productivity site (Notion) and you're starting the next task — well done finishing the slides. I'm allowing it so you can begin Chapter 7 or start the practice problems. Aim for a focused 30–45 minute block, then take a 10–15 minute break to protect your energy."
+      }
+    },
+    "steps": [
+      {
+        "module": "ReAct.LLM",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "(system prompt - see prompt_template)"
+            },
+            {
+              "role": "system",
+              "content": "(few-shot examples - 24 turns)"
+            },
+            {
+              "role": "user",
+              "content": "I just finished the slides for the AI agent presentation. Opened notion.so to start the next task."
+            }
+          ]
+        },
+        "response": {
+          "type": "tool_call",
+          "tool": "read_long_memory",
+          "args": {}
+        }
+      },
+      {
+        "module": "Tools.read_long_memory",
+        "prompt": {
+          "tool": "read_long_memory",
+          "args": {}
+        },
+        "response": {
+          "content": "Profile summary: The student is currently working on Maman 16 (scheduled for today) and shows a clear pattern of vulnerability to evening distractions. Recent behaviour: frequent long entertainment blocks in the evening and low study time on recent days, which makes deadlines at night a high-risk moment. Task completion: mixed — some assignments are completed, but several important course tasks remain (guided practice — Data Structures due 2026-08-06; Financial Management midterm prep due 2026-08-12; AI agents final project due 2026-08-23; slides for the AI-agent presentation and Chapter 7 reading). Cognitive/behavioural notes: the student performs best with short, structured study blocks (25–45 minutes) followed by brief breaks (10–15 minutes); they are easily pulled away by social media, streaming and shopping sites. Effective strategy: prioritize urgent deadlines (finish Maman 16 tonight), use timed nudges and short focused sessions, lock or firmly block high-risk sites when urgent work is due, and schedule follow-up 25–45 minute blocks to build momentum without causing burnout.",
+          "updated_at": "2026-08-05T16:27:59.166195+00:00"
+        }
+      },
+      {
+        "module": "ReAct.LLM",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "(system prompt - see prompt_template)"
+            },
+            {
+              "role": "system",
+              "content": "(few-shot examples - 24 turns)"
+            },
+            {
+              "role": "user",
+              "content": "I just finished the slides for the AI agent presentation. Opened notion.so to start the next task."
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"content\": \"Profile summary: The student is currently working on Maman 16 (scheduled for today) and shows a clear pattern of vulnerability to evening distractions. Recent behaviour: frequent long entertainment blocks in the evening and low study time on recent days, which makes deadlines at night a high-risk moment. Task completion: mixed — some assignments are completed, but several important course tasks remain (guided practice — Data Structures due 2026-08-06; Financial Management midterm prep due 2026-08-12; AI agents final project due 2026-08-23; slides for the AI-agent presentation and Chapter 7 reading). Cognitive/behavioural notes: the student performs best with short, structured study blocks (25–45 minutes) followed by brief breaks (10–15 minutes); they are easily pulled away by social media, streaming and shopping sites. Effective strategy: prioritize urgent deadlines (finish Maman 16 tonight), use timed nudges and short focused sessions, lock or firmly block high-risk sites when urgent work is due, and schedule follow-up 25–45 minute blocks to build momentum without causing burnout.\", \"updated_at\": \"2026-08-05T16:27:59.166195+00:00\"}"
+            }
+          ]
+        },
+        "response": {
+          "type": "tool_call",
+          "tools": [
+            {
+              "tool": "read_calendar",
+              "args": {}
+            },
+            {
+              "tool": "read_todo_list",
+              "args": {}
+            }
+          ]
+        }
+      },
+      {
+        "module": "Tools.read_calendar",
+        "prompt": {
+          "tool": "read_calendar",
+          "args": {}
+        },
+        "response": {
+          "weekly_events": [
+            {
+              "date": "2026-08-03",
+              "title": "מצגת 10 דקות - סוכן בינה מלאכותית"
+            },
+            {
+              "date": "2026-08-04",
+              "title": "שעת קבלה - ד\"ר לוי (זום, 18:00)"
+            },
+            {
+              "date": "2026-08-05",
+              "title": "ממן 16 - מבוא לבינה מלאכותית"
+            },
+            {
+              "date": "2026-08-06",
+              "title": "תרגול מונחה - מבני נתונים"
+            },
+            {
+              "date": "2026-08-09",
+              "title": "מפגש הנחיה - אלגוריתמים (זום)"
+            },
+            {
+              "date": "2026-08-10",
+              "title": "הגשת תרגיל 4 - ניהול פיננסי"
+            },
+            {
+              "date": "2026-08-12",
+              "title": "בחינת סמסטר - ניהול פיננסי"
+            },
+            {
+              "date": "2026-08-13",
+              "title": "פגישת צוות - פרויקט גמר"
+            },
+            {
+              "date": "2026-08-16",
+              "title": "סדנת חזרה לבחינה - ניהול אסטרטגי"
+            },
+            {
+              "date": "2026-08-19",
+              "title": "בחינת בית 24 שעות - ניהול אסטרטגי"
+            },
+            {
+              "date": "2026-08-23",
+              "title": "הגשת פרויקט גמר - סוכני בינה מלאכותית"
+            },
+            {
+              "date": "2026-08-27",
+              "title": "מועד ב' - מבוא לבינה מלאכותית"
+            }
+          ]
+        }
+      },
+      {
+        "module": "Tools.read_todo_list",
+        "prompt": {
+          "tool": "read_todo_list",
+          "args": {}
+        },
+        "response": {
+          "pending_tasks": [
+            "לסיים שקפים למצגת הסוכן",
+            "לקרוא פרק 7 - למידה מונחית",
+            "תרגול שאלות מבחן - ניהול פיננסי"
+          ],
+          "completed_tasks": [
+            "ממן 15 - הוגש",
+            "ממן 16 - שאלה 3 ו-4",
+            "לצפות בהקלטת מפגש 4",
+            "סיכום פרקים 1-6",
+            "להזמין ספר קורס מהספרייה",
+            "תרגיל רשות - אלגוריתמים",
+            "להירשם לקורסי סמסטר ב'",
+            "לתאם פגישה עם מנחה הסמינר"
+          ]
+        }
+      },
+      {
+        "module": "ReAct.LLM",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "(system prompt - see prompt_template)"
+            },
+            {
+              "role": "system",
+              "content": "(few-shot examples - 24 turns)"
+            },
+            {
+              "role": "user",
+              "content": "I just finished the slides for the AI agent presentation. Opened notion.so to start the next task."
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"content\": \"Profile summary: The student is currently working on Maman 16 (scheduled for today) and shows a clear pattern of vulnerability to evening distractions. Recent behaviour: frequent long entertainment blocks in the evening and low study time on recent days, which makes deadlines at night a high-risk moment. Task completion: mixed — some assignments are completed, but several important course tasks remain (guided practice — Data Structures due 2026-08-06; Financial Management midterm prep due 2026-08-12; AI agents final project due 2026-08-23; slides for the AI-agent presentation and Chapter 7 reading). Cognitive/behavioural notes: the student performs best with short, structured study blocks (25–45 minutes) followed by brief breaks (10–15 minutes); they are easily pulled away by social media, streaming and shopping sites. Effective strategy: prioritize urgent deadlines (finish Maman 16 tonight), use timed nudges and short focused sessions, lock or firmly block high-risk sites when urgent work is due, and schedule follow-up 25–45 minute blocks to build momentum without causing burnout.\", \"updated_at\": \"2026-08-05T16:27:59.166195+00:00\"}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"weekly_events\": [{\"date\": \"2026-08-03\", \"title\": \"מצגת 10 דקות - סוכן בינה מלאכותית\"}, {\"date\": \"2026-08-04\", \"title\": \"שעת קבלה - ד\\\"ר לוי (זום, 18:00)\"}, {\"date\": \"2026-08-05\", \"title\": \"ממן 16 - מבוא לבינה מלאכותית\"}, {\"date\": \"2026-08-06\", \"title\": \"תרגול מונחה - מבני נתונים\"}, {\"date\": \"2026-08-09\", \"title\": \"מפגש הנחיה - אלגוריתמים (זום)\"}, {\"date\": \"2026-08-10\", \"title\": \"הגשת תרגיל 4 - ניהול פיננסי\"}, {\"date\": \"2026-08-12\", \"title\": \"בחינת סמסטר - ניהול פיננסי\"}, {\"date\": \"2026-08-13\", \"title\": \"פגישת צוות - פרויקט גמר\"}, {\"date\": \"2026-08-16\", \"title\": \"סדנת חזרה לבחינה - ניהול אסטרטגי\"}, {\"date\": \"2026-08-19\", \"title\": \"בחינת בית 24 שעות - ניהול אסטרטגי\"}, {\"date\": \"2026-08-23\", \"title\": \"הגשת פרויקט גמר - סוכני בינה מלאכותית\"}, {\"date\": \"2026-08-27\", \"title\": \"מועד ב' - מבוא לבינה מלאכותית\"}]}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"pending_tasks\": [\"לסיים שקפים למצגת הסוכן\", \"לקרוא פרק 7 - למידה מונחית\", \"תרגול שאלות מבחן - ניהול פיננסי\"], \"completed_tasks\": [\"ממן 15 - הוגש\", \"ממן 16 - שאלה 3 ו-4\", \"לצפות בהקלטת מפגש 4\", \"סיכום פרקים 1-6\", \"להזמין ספר קורס מהספרייה\", \"תרגיל רשות - אלגוריתמים\", \"להירשם לקורסי סמסטר ב'\", \"לתאם פגישה עם מנחה הסמינר\"]}"
+            }
+          ]
+        },
+        "response": {
+          "type": "tool_call",
+          "tools": [
+            {
+              "tool": "update_todo_status",
+              "args": {
+                "task_name": "לסיים שקפים למצגת הסוכן",
+                "status": "completed"
+              }
+            },
+            {
+              "tool": "rewrite_memory",
+              "args": {
+                "scope": "short",
+                "text": "[Cumulative for 2026-08-05]\n- Study: 7 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Daily Flow]\n- Evening: Woke at 19:26; finished slides for the AI-agent presentation.\n[Current Activity]\n- Started notion.so [Study] at 19:33."
+              }
+            }
+          ]
+        }
+      },
+      {
+        "module": "Tools.update_todo_status",
+        "prompt": {
+          "tool": "update_todo_status",
+          "args": {
+            "task_name": "לסיים שקפים למצגת הסוכן",
+            "status": "completed"
+          }
+        },
+        "response": {
+          "ok": true
+        }
+      },
+      {
+        "module": "Tools.rewrite_memory",
+        "prompt": {
+          "tool": "rewrite_memory",
+          "args": {
+            "scope": "short",
+            "text": "[Cumulative for 2026-08-05]\n- Study: 7 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Daily Flow]\n- Evening: Woke at 19:26; finished slides for the AI-agent presentation.\n[Current Activity]\n- Started notion.so [Study] at 19:33."
+          }
+        },
+        "response": {
+          "ok": true
+        }
+      },
+      {
+        "module": "ReAct.LLM",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "(system prompt - see prompt_template)"
+            },
+            {
+              "role": "system",
+              "content": "(few-shot examples - 24 turns)"
+            },
+            {
+              "role": "user",
+              "content": "I just finished the slides for the AI agent presentation. Opened notion.so to start the next task."
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"content\": \"Profile summary: The student is currently working on Maman 16 (scheduled for today) and shows a clear pattern of vulnerability to evening distractions. Recent behaviour: frequent long entertainment blocks in the evening and low study time on recent days, which makes deadlines at night a high-risk moment. Task completion: mixed — some assignments are completed, but several important course tasks remain (guided practice — Data Structures due 2026-08-06; Financial Management midterm prep due 2026-08-12; AI agents final project due 2026-08-23; slides for the AI-agent presentation and Chapter 7 reading). Cognitive/behavioural notes: the student performs best with short, structured study blocks (25–45 minutes) followed by brief breaks (10–15 minutes); they are easily pulled away by social media, streaming and shopping sites. Effective strategy: prioritize urgent deadlines (finish Maman 16 tonight), use timed nudges and short focused sessions, lock or firmly block high-risk sites when urgent work is due, and schedule follow-up 25–45 minute blocks to build momentum without causing burnout.\", \"updated_at\": \"2026-08-05T16:27:59.166195+00:00\"}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"weekly_events\": [{\"date\": \"2026-08-03\", \"title\": \"מצגת 10 דקות - סוכן בינה מלאכותית\"}, {\"date\": \"2026-08-04\", \"title\": \"שעת קבלה - ד\\\"ר לוי (זום, 18:00)\"}, {\"date\": \"2026-08-05\", \"title\": \"ממן 16 - מבוא לבינה מלאכותית\"}, {\"date\": \"2026-08-06\", \"title\": \"תרגול מונחה - מבני נתונים\"}, {\"date\": \"2026-08-09\", \"title\": \"מפגש הנחיה - אלגוריתמים (זום)\"}, {\"date\": \"2026-08-10\", \"title\": \"הגשת תרגיל 4 - ניהול פיננסי\"}, {\"date\": \"2026-08-12\", \"title\": \"בחינת סמסטר - ניהול פיננסי\"}, {\"date\": \"2026-08-13\", \"title\": \"פגישת צוות - פרויקט גמר\"}, {\"date\": \"2026-08-16\", \"title\": \"סדנת חזרה לבחינה - ניהול אסטרטגי\"}, {\"date\": \"2026-08-19\", \"title\": \"בחינת בית 24 שעות - ניהול אסטרטגי\"}, {\"date\": \"2026-08-23\", \"title\": \"הגשת פרויקט גמר - סוכני בינה מלאכותית\"}, {\"date\": \"2026-08-27\", \"title\": \"מועד ב' - מבוא לבינה מלאכותית\"}]}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"pending_tasks\": [\"לסיים שקפים למצגת הסוכן\", \"לקרוא פרק 7 - למידה מונחית\", \"תרגול שאלות מבחן - ניהול פיננסי\"], \"completed_tasks\": [\"ממן 15 - הוגש\", \"ממן 16 - שאלה 3 ו-4\", \"לצפות בהקלטת מפגש 4\", \"סיכום פרקים 1-6\", \"להזמין ספר קורס מהספרייה\", \"תרגיל רשות - אלגוריתמים\", \"להירשם לקורסי סמסטר ב'\", \"לתאם פגישה עם מנחה הסמינר\"]}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"ok\": true}"
+            },
+            {
+              "role": "user",
+              "content": "TOOL RESULT (not the student): {\"ok\": true}"
+            }
+          ]
+        },
+        "response": {
+          "type": "decision",
+          "action": "allow",
+          "url": "notion.so",
+          "message": "I see this is a study/productivity site (Notion) and you're starting the next task — well done finishing the slides. I'm allowing it so you can begin Chapter 7 or start the practice problems. Aim for a focused 30–45 minute block, then take a 10–15 minute break to protect your energy."
+        }
+      }
+    ]
   }
 ]
