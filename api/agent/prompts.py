@@ -425,7 +425,7 @@ TEMPLATE = (
 STALE = (
     "That note is from an earlier day. Before judging the tab, you MUST do the following in order:\n"
     "1. Call `read_long_memory()` to see the student's existing habits.\n"
-    "2. Move any new patterns or habits from yesterday's short memory into the long memory using `rewrite_memory` (appending to what was already there).\n"
+    "2. Analyze yesterday's short memory (time spent on Study vs Entertainment) and check the to-do list for completed tasks. Write a qualitative, psychological summary of their behavior in 1-2 sentences (e.g. 'Yesterday the student was unfocused, wasting 4 hours on entertainment and failing to complete any tasks.'). Append this summary to the existing long memory using `rewrite_memory` (scope: 'long'). DO NOT copy-paste raw numbers.\n"
     "3. Rewrite short memory to clear it and reset all Cumulative totals to 0 for today.\n"
     "This line is fixed for the whole run, so if you have already done this, ignore it and decide on the tab.\n"
 )
