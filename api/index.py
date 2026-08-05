@@ -139,24 +139,27 @@ async def complete_task(body: dict | None = None):
     return {"status": "ok", "result": res}
 @app.post("/api/simulate_new_day")
 async def simulate_new_day():
+    from datetime import datetime, timedelta, timezone
+    yesterday_dt = datetime.now(timezone.utc) - timedelta(days=1)
+    yesterday_str = yesterday_dt.date().isoformat()
+    yesterday_iso = yesterday_dt.isoformat()
+    
     fake_memory = (
-        "[Cumulative for 2026-08-04]\n"
+        f"[Cumulative for {yesterday_str}]\n"
         "- Study: 0 mins\n"
         "- Errands: 0 mins\n"
         "- Entertainment: 4 hours 30 mins\n"
         "[Current Activity]\n"
         "- Offline (no active tracked tabs)."
     )
-    # We must patch `updated_at` to yesterday, otherwise loop.py thinks the memory is from today.
-    from datetime import datetime, timedelta, timezone
-    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
     
+    # We must patch `updated_at` to yesterday, otherwise loop.py thinks the memory is from today.
     memory.update("memory", {"scope": "short"}, {
         "content": fake_memory,
-        "updated_at": yesterday
+        "updated_at": yesterday_iso
     })
     
-    return {"status": "ok", "message": "Simulated new day: changed short memory to yesterday and added 4h30m of entertainment."}
+    return {"status": "ok", "message": f"Simulated new day: changed short memory to yesterday ({yesterday_str}) and added 4h30m of entertainment."}
 
 
 @app.get("/api/team_info")
