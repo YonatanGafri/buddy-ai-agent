@@ -759,12 +759,12 @@ function App() {
                 <Icon name="bolt" size={16} />{busy ? 'Running…' : 'Run Agent'}
               </button>
             </div>
-            <div style={{textAlign: 'right', marginTop: '4px'}}>
-              <button title="For testing purposes only: Simulates the passing of a day by changing the short memory date to yesterday. This forces the agent to trigger the End of Day summary and update Long Memory habits." style={{background: 'transparent', border: 'none', color: 'var(--ink-faint)', fontSize: '11px', cursor: 'pointer', marginRight: '10px'}} disabled={busy} onClick={() => { fetch('/api/simulate_new_day', {method: 'POST'}).then(() => window.location.reload()) }}>
-                Simulate New Day (i)
+            <div style={{textAlign: 'right', marginTop: '8px'}}>
+              <button title="For testing purposes only: Simulates the passing of a day by changing the short memory date to yesterday. This forces the agent to trigger the End of Day summary and update Long Memory habits." style={{background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '4px 8px', color: 'var(--ink)', fontSize: '11px', cursor: 'pointer', marginRight: '10px'}} disabled={busy} onClick={() => { fetch('/api/simulate_new_day', {method: 'POST'}).then(() => window.location.reload()) }}>
+                Simulate New Day <span style={{color: 'red', fontWeight: 'bold'}}>(i)</span>
               </button>
-              <button title="For testing purposes only: Forces the agent to evaluate the student immediately (useful if the agent previously scheduled a check-in timer, and you don't want to wait)." style={{background: 'transparent', border: 'none', color: 'var(--ink-faint)', fontSize: '11px', cursor: 'pointer'}} disabled={busy} onClick={() => runAgent('Waking up - you asked to check back.', { wake: true })}>
-                Wake Up (For Testing) (i)
+              <button title="For testing purposes only: Forces the agent to evaluate the student immediately (useful if the agent previously scheduled a check-in timer, and you don't want to wait)." style={{background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '4px 8px', color: 'var(--ink)', fontSize: '11px', cursor: 'pointer'}} disabled={busy} onClick={() => runAgent('Waking up - you asked to check back.', { wake: true })}>
+                Wake Up <span style={{color: 'red', fontWeight: 'bold'}}>(i)</span>
               </button>
             </div>
             <DecisionHistory answers={answers} />
