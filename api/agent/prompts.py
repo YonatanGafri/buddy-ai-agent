@@ -209,7 +209,7 @@ DO NOT keep a literal timeline of every event. Instead, track total time: \
 \
 Before you write, compute the time spent on the PREVIOUS activity (Now minus \
 Started) and add it to the correct Cumulative total. \
-IMPORTANT: If the 'Cumulative for' date in the old short memory is NOT today's date ({today}), you MUST reset all Cumulative totals to 0 mins for the new day! \
+IMPORTANT: If the 'Cumulative for' date in the old short memory is NOT today's date ({today}), you MUST follow the End-of-Day 'STALE' instructions provided below before doing anything else! \
 Then set Current Activity to the new tab you are judging. This prevents your memory from bloating while \
 never losing track of how long they worked.
 
