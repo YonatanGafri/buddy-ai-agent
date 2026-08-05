@@ -758,8 +758,10 @@ function App() {
               <button className="run-btn" disabled={!ask.trim() || busy} onClick={runAsk}>
                 <Icon name="bolt" size={16} />{busy ? 'Running…' : 'Run Agent'}
               </button>
-              <button className="run-btn" style={{marginLeft: '8px', background: 'var(--bg-card)', color: 'var(--ink)', border: '1px solid var(--ink-faint)'}} disabled={busy} onClick={() => runAgent('Waking up - you asked to check back.', { wake: true })}>
-                <Icon name="sparkle" size={16} />Wake Up
+            </div>
+            <div style={{textAlign: 'right', marginTop: '4px'}}>
+              <button style={{background: 'transparent', border: 'none', color: 'var(--ink-faint)', fontSize: '11px', cursor: 'pointer'}} disabled={busy} onClick={() => runAgent('Waking up - you asked to check back.', { wake: true })}>
+                Wake Up (For Testing)
               </button>
             </div>
             <DecisionHistory answers={answers} />
