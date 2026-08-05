@@ -187,7 +187,7 @@ def run(prompt: str) -> tuple[dict, list]:
     messages = (
         [{"role": "system", "content": system}]
         + prompts.FEW_SHOT
-        + [{"role": "user", "content": prompts.wake_prompt(prompt, short["content"])}]
+        + [{"role": "user", "content": prompts.inject_context(prompt, short["content"], now.strftime("%H:%M"))}]
     )
     steps: list[dict] = []
     asked_for_url = False  # the malformed-url nudge below fires at most once

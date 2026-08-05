@@ -103,7 +103,7 @@ history assignment"). This creates a timeline so you can know how long the \
 student has been working or slacking. Turns are cheap; a message they roll \
 their eyes at is not.
 
-ACTIONS - allow (MUST include a short message in English explicitly stating WHY you allowed it - e.g. 'I see this is an educational site', 'I see these are necessary errands', or 'You earned some entertainment'. MUST also be logged to memory), nudge (a warning message, no block. Do NOT tell the student to "close" the tab, because you are allowing them to stay on it. Tell them you will let them stay for now but will check back on them in X minutes), lock (blocks this one \
+ACTIONS - allow (MUST include a short message in English explicitly stating WHY you allowed it - e.g. 'I see this is an educational site', 'I see these are necessary errands', or 'You earned some entertainment'. MUST also be logged to memory, but DO NOT say 'Logged to short memory' in your message to the user), nudge (a warning message, no block. Do NOT tell the student to "close" the tab, because you are allowing them to stay on it. Tell them you will let them stay for now but will check back on them in X minutes), lock (blocks this one \
 navigation). There is no unlock and none is needed: next time they open the site \
 you are asked again and can allow it. Never promise to reopen or unblock \
 anything.
@@ -294,10 +294,10 @@ FEW_SHOT = [
 
     # 1c. YouTube is a mixed-use site. The agent uses read_website to check if
     # the video is educational before deciding.
-    {"role": "user", "content": "Opened youtube.com/watch?v=12345"},
+    {"role": "user", "content": "Opened youtube.com/watch?v=12345\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il at 10:15.\")\nSystem: It is now 11:00."},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_website","args":{"url":"youtube.com/watch?v=12345"}}'},
     {"role": "user", "content": OBSERVATION + '{"read_website":{"title":"MIT 18.06 Linear Algebra, Spring 2005","description":"Linear Algebra lecture"}}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 1 hour 45 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"youtube.com","message":"I see this is an educational video on Linear Algebra, keep it up!"}'},
 
@@ -306,18 +306,18 @@ FEW_SHOT = [
     #    check in one write before the decision. The calendar comes back EMPTY
     #    and the nudge names no deadline - it argues from the tab alone, which
     #    is what the agent must do when it has read nothing that supports one.
-    {"role": "user", "content": "Opened twitch.tv - 'valorant ranked grind'"},
+    {"role": "user", "content": "Opened twitch.tv - 'valorant ranked grind'\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00.\")\nSystem: It is now 14:58."},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_calendar","args":{}}'},
     {"role": "user", "content": OBSERVATION + '{"weekly_events":[]}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Entertainment: 20 mins\n[Current Activity]\n- Nudged twitch.tv 1x at 14:58 (check in 5 min)."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 4 hours 58 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged twitch.tv 1x at 14:58 (check in 5 min)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"Ranked eats hours. I will let you stay for a bit, but I will check back on you in 5 minutes to make sure you return to your coursework.","callback":300}'},
 
     # 2a. Two reads in one turn, then the write, then the decision. 
-    {"role": "user", "content": "opened ebay.com, just browsing"},
+    {"role": "user", "content": "opened ebay.com, just browsing\n(Your short memory at this point read: \"[Cumulative for 2026-08-05]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il at 09:00.\")\nSystem: It is now 10:00."},
     {"role": "assistant", "content": '{"type":"tool_call","tools":[{"tool":"read_calendar","args":{}},{"tool":"read_todo_list","args":{}}]}'},
     {"role": "user", "content": OBSERVATION + '{"read_calendar":{"weekly_events":[]},"read_todo_list":{"pending_tasks":[],"completed_tasks":[]}}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged ebay.com 1x at 10:00 (check in 10 min)."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative for 2026-08-05]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged ebay.com 1x at 10:00 (check in 10 min)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"ebay.com","message":"Just browsing turns into an hour and a cart you regret. I will let you browse for a bit, but I will check back in 10 minutes.","callback":600}'},
 
@@ -481,16 +481,15 @@ def build_system(now: str, weekday: str, today: str,
 WAKE_SENTINEL = "Waking up - you asked to check back."
 
 
-def wake_prompt(prompt: str, short_memory: str) -> str:
-    """On a wake, restate the agent's own note inside the user turn.
-
-    Every few-shot wake carries its note inline; a live wake arrived bare, with
-    the note only in the system block. The examples never matched that shape, so
-    the model read its own "nudged 2x" as background and allowed - eleven prompt
-    rewrites did not move it, and the same note moved into the user turn fixes
-    it outright. Nothing is added here that the agent did not write itself.
+def inject_context(prompt: str, short_memory: str, now_str: str) -> str:
+    """Injects the agent's current short memory and time into the user's turn.
+    
+    This ensures the agent always computes time diffs relative to its last memory
+    block, matching the FEW_SHOT examples precisely.
     """
     note = short_memory.strip()
-    if prompt.strip() != WAKE_SENTINEL or not note:
-        return prompt
-    return f'{prompt}\n(Your short memory at this point read: "{note}")'
+    res = prompt
+    if note:
+        res = f'{res}\n(Your short memory at this point read: "{note}")'
+    res = f'{res}\nSystem: It is now {now_str}.'
+    return res
