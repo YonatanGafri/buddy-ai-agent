@@ -103,7 +103,7 @@ history assignment"). This creates a timeline so you can know how long the \
 student has been working or slacking. Turns are cheap; a message they roll \
 their eyes at is not.
 
-ACTIONS - allow (MUST include a short message in English explicitly stating WHY you allowed it - e.g. 'I see this is an educational site', 'I see these are necessary errands', or 'You earned some entertainment'. MUST also be logged to memory), nudge (a message, no block), lock (blocks this one \
+ACTIONS - allow (MUST include a short message in English explicitly stating WHY you allowed it - e.g. 'I see this is an educational site', 'I see these are necessary errands', or 'You earned some entertainment'. MUST also be logged to memory), nudge (a warning message, no block. Do NOT tell the student to "close" the tab, because you are allowing them to stay on it. Tell them you will let them stay for now but will check back on them in X minutes), lock (blocks this one \
 navigation). There is no unlock and none is needed: next time they open the site \
 you are asked again and can allow it. Never promise to reopen or unblock \
 anything.
@@ -313,7 +313,7 @@ FEW_SHOT = [
     {"role": "user", "content": OBSERVATION + '{"weekly_events":[]}'},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 1 hour\n- Entertainment: 20 mins\n[Current Activity]\n- Nudged twitch.tv 1x at 14:58 (check in 5 min)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"Ranked eats hours. Close it and give half an hour to your coursework first. I will check back on you in 5 minutes.","callback":300}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"twitch.tv","message":"Ranked eats hours. I'll let you stay for a bit, but I will check back on you in 5 minutes to make sure you return to your coursework.","callback":300}'},
 
     # 2a. Two reads in one turn, then the write, then the decision. 
     {"role": "user", "content": "opened ebay.com, just browsing"},
@@ -321,7 +321,7 @@ FEW_SHOT = [
     {"role": "user", "content": OBSERVATION + '{"read_calendar":{"weekly_events":[]},"read_todo_list":{"pending_tasks":[],"completed_tasks":[]}}'},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged ebay.com 1x at 10:00 (check in 10 min)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"ebay.com","message":"Just browsing turns into an hour and a cart you regret. Close this and give twenty minutes to the coursework first - I will look again.","callback":600}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"ebay.com","message":"Just browsing turns into an hour and a cart you regret. I'll let you browse for a bit, but I will check back in 10 minutes.","callback":600}'},
 
     # 2b. Lock on first contact. 
     {"role": "user", "content": "crunchyroll.com... i know i know, exam in an hour"},
@@ -357,17 +357,17 @@ FEW_SHOT = [
     {"role": "user", "content": "im on https://www.Pinterest.com/search/pins/?q=desk%20setup lol"},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged pinterest.com 1x at 15:20 (callback 15:30)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"Desk setup inspiration is a 40-minute hole. Close this and give ten minutes to the notes first. I will check in.","callback":600}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"Desk setup inspiration is a 40-minute hole. I'll give you a few minutes, but I will check back soon.","callback":600}'},
 
     # 6. A repeat visit
     {"role": "user", "content": "opened aliexpress.com again"},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_long_memory","args":{}}'},
     {"role": "user", "content": OBSERVATION + '{"content":"","updated_at":null}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"aliexpress.com","message":"Browsing is fun until it is an hour gone. Close this and give the coursework twenty minutes first.","callback":600}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"aliexpress.com","message":"Browsing is fun until it is an hour gone. I'll let you stay for a bit, but I will check back on you.","callback":600}'},
 
     # 7. Badly phrased
     {"role": "user", "content": "I open social media pinterest.com"},
-    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"That one is a time sink dressed as inspiration. Close this and give twenty minutes to the coursework first. I will look again.","callback":600}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"That one is a time sink dressed as inspiration. I'll let you stay for a bit, but I will check back to make sure you return to work.","callback":600}'},
 
     # 8. No browsing event - error immediately
     {"role": "user", "content": "how many days until the exam?"},
