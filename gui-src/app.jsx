@@ -51,8 +51,9 @@ document.head.appendChild(document.createElement('style')).textContent = `
     cursor: pointer; padding: 0 8px; align-self: center; margin-left: auto;
   }
   .tab-close:hover { color: var(--ink); }
-  .ctx-dot-clickable { cursor: pointer; }
-  .ctx-dot-clickable:hover { border-color: var(--ink); background: var(--ink-faint); }
+  .ctx-item-clickable { cursor: pointer; transition: color 0.15s; }
+  .ctx-item-clickable:hover { color: var(--ink); text-decoration: line-through; }
+  .ctx-item-clickable:hover .ctx-dot { border-color: var(--ink); background: var(--ink-faint); }
 
   /* Bigger type throughout. The generated sheet was drawn for a denser layout;
      these are the text elements a person actually reads, nudged up one step. */
@@ -344,7 +345,7 @@ function ContextPanel({ ctx, onCompleteTask }) {
             <span className="ctx-count">{ctx.todo.pending.length} open</span>
           </div>
           {ctx.todo.pending.map((t, i) => (
-            <div className="ctx-item" key={i}><span className="ctx-dot ctx-dot-clickable" onClick={() => onCompleteTask(t)} title="Mark complete" />{t}</div>
+            <div className="ctx-item ctx-item-clickable" key={i} onClick={() => onCompleteTask(t)} title="Click to mark as completed"><span className="ctx-dot" />{t}</div>
           ))}
           {ctx.todo.completed.map((t, i) => (
             <div className="ctx-item done" key={'c' + i}><span className="ctx-check">✓</span>{t}</div>
