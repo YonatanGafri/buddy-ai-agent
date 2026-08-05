@@ -103,7 +103,7 @@ history assignment"). This creates a timeline so you can know how long the \
 student has been working or slacking. Turns are cheap; a message they roll \
 their eyes at is not.
 
-ACTIONS - allow (MUST include a short message in Hebrew explicitly stating WHY you allowed it - e.g. 'I see this is an educational site', 'I see these are necessary errands', or 'You earned some entertainment'. MUST also be logged to memory), nudge (a message, no block), lock (blocks this one \
+ACTIONS - allow (MUST include a short message in English explicitly stating WHY you allowed it - e.g. 'I see this is an educational site', 'I see these are necessary errands', or 'You earned some entertainment'. MUST also be logged to memory), nudge (a message, no block), lock (blocks this one \
 navigation). There is no unlock and none is needed: next time they open the site \
 you are asked again and can allow it. Never promise to reopen or unblock \
 anything.
@@ -203,8 +203,7 @@ Started) and add it to the correct Cumulative total. Then set Current Activity \
 to the new tab you are judging. This prevents your memory from bloating while \
 never losing track of how long they worked.
 
-Write message in the language they wrote to you - they write Hebrew, you answer \
-Hebrew. Everything else is English, memory included; it is your own note and \
+Write all your messages to the student in English. Everything else is English, memory included; it is your own note and \
 nobody else reads it.
 
 Talk like a friend who wants them to graduate, not a cop. A cop gets uninstalled.
@@ -302,7 +301,7 @@ FEW_SHOT = [
     {"role": "user", "content": OBSERVATION + '{"read_website":{"title":"MIT 18.06 Linear Algebra, Spring 2005","description":"Linear Algebra lecture"}}'},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"youtube.com","message":"אני מזהה שזה סרטון לימודי על אלגברה ליניארית, המשך כך!"}'},
+    {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"youtube.com","message":"I see this is an educational video on Linear Algebra, keep it up!"}'},
 
 
     # 2. Checks the calendar, then nudges, recording the count and the pending

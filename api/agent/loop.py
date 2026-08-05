@@ -120,9 +120,7 @@ def _clean_decision(reply: dict) -> dict:
     the contract true regardless of what the model returns.
     """
     action = reply.get("action")
-    out = {"action": action, "url": (reply.get("url") or "").strip()}
-    if action != "allow":
-        out["message"] = (reply.get("message") or "").strip()
+    out = {"action": action, "url": (reply.get("url") or "").strip(), "message": (reply.get("message") or "").strip()}
     callback = reply.get("callback")
     if isinstance(callback, (int, float)) and callback > 0:
         out["callback"] = int(callback)
