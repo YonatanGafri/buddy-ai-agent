@@ -88,6 +88,23 @@ durable into long memory and clear short - once. That comparison is done in
 Python rather than left to the model, which does not reliably notice that two
 dates in different paragraphs disagree.
 
+## Advanced Features & Optimizations
+
+To ensure the agent is both incredibly smart and cost-efficient (saving tokens and latency), we implemented several backend optimizations:
+
+- **oEmbed Integration:** When the agent calls `read_website` on popular media sites (YouTube, Spotify, Vimeo, etc.), the backend automatically routes the request to their oEmbed API. This guarantees clean, instant metadata without downloading any heavy HTML payloads.
+- **128KB Chunking:** For standard websites, `read_website` only downloads the first 128KB of the HTML document. Our testing proved this is more than enough to capture the `<title>` and `<meta>` tags for almost all sites, drastically reducing memory overhead and response time.
+- **Backend Tab Closures:** When a student closes a tab, updating the cumulative time is handled entirely by a deterministic Python endpoint (`/api/close_tab`). It uses Regex and arithmetic to update the Short Memory, bypassing the LLM completely to save costs.
+- **STALE Overnight Synthesis:** The agent does not simply clear its memory at midnight. The prompt engine detects date mismatches and forces a `STALE` logic sequence. The agent wakes up, synthesizes yesterday's raw activities into a unified psychological profile (written strictly in English), stores it in Long Memory, and only then resets the daily counters.
+
+## Testing & Simulation UI
+
+Please note that the **Simulate New Day** and **Wake Up** buttons visible in the GUI are **strictly for testing and grading purposes**. They are not part of the actual end-user product. 
+- **Simulate New Day** instantly advances the system's clock to trigger the overnight `STALE` memory synthesis.
+- **Wake Up** fires an immediate callback, mimicking the browser extension's background timer.
+
+*Design Note:* We initially planned to add a **Clear Memory** button (to easily wipe Short & Long memory so you could test the agent as a completely new user). However, we ultimately decided against it to avoid cluttering the GUI. To test a fresh user, you can simply clear the `memory` table in Supabase.
+
 ## Layout
 
 ```
