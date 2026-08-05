@@ -95,7 +95,12 @@ def read_website(url: str = "") -> dict:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Buddy)"})
         with urllib.request.urlopen(req, timeout=5) as resp:
             # ponytail: first 128KB only - title/meta live in <head>; full pages can be MBs
-            raw = resp.read(131072).decode("utf-8", errors="replace")
+            raw_bytes = resp.read(131072)
+            try:
+                raw = raw_bytes.decode("utf-8", errors="strict")
+            except UnicodeDecodeError:
+                # Fallback for older Israeli sites (like Open University)
+                raw = raw_bytes.decode("windows-1255", errors="replace")
     except Exception as exc:
         return {"error": f"could not fetch {url}: {str(exc)[:200]}"}
 
