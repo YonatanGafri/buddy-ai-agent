@@ -194,7 +194,8 @@ you must use a Cumulative Time Dashboard to maintain state. \
 DO NOT keep a literal timeline of every event. Instead, track total time: \
 [Cumulative Today] \
 - Study Time: X hours Y mins \
-- Entertainment/Other: X hours Y mins \
+- Errands: X hours Y mins \
+- Entertainment: X hours Y mins \
 [Current Activity] \
 - Started [Activity Name] at [HH:MM]. \
 \
@@ -283,15 +284,15 @@ FEW_SHOT = [
     # 1. An obviously on-task tab, allowed. Every decision must be documented, 
     #    so it writes to short memory before returning allow.
     {"role": "user", "content": "Opened jstor.org - 'kinship structures in highland burma'"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started jstor.org at 10:15."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started jstor.org at 10:15."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"jstor.org"}'},
 
     # 1b. Allow for a break based on continuous learning flow. The agent computes the time difference
     # from its own notes and grants a break. Note that no message is returned on allow, but a
     # callback is set to check back later.
-    {"role": "user", "content": "Opened facebook.com\n(Your short memory at this point read: \"[Cumulative Today]\n- Study: 2 hours 15 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il at 14:00.\")\nSystem: It is now 15:15."},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 3 hours 30 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started facebook.com (10 min break) at 15:15."}}'},
+    {"role": "user", "content": "Opened facebook.com\n(Your short memory at this point read: \"[Cumulative Today]\n- Study: 2 hours 15 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started campus.openu.ac.il at 14:00.\")\nSystem: It is now 15:15."},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 3 hours 30 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started facebook.com (10 min break) at 15:15."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"facebook.com","callback":600}'},
 
@@ -300,7 +301,7 @@ FEW_SHOT = [
     {"role": "user", "content": "Opened youtube.com/watch?v=12345"},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_website","args":{"url":"youtube.com/watch?v=12345"}}'},
     {"role": "user", "content": OBSERVATION + '{"read_website":{"title":"MIT 18.06 Linear Algebra, Spring 2005","description":"Linear Algebra lecture"}}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 1 hour\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Started youtube.com (Linear Algebra) at 11:00."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"allow","url":"youtube.com"}'},
 
@@ -320,13 +321,13 @@ FEW_SHOT = [
     {"role": "user", "content": "opened ebay.com, just browsing"},
     {"role": "assistant", "content": '{"type":"tool_call","tools":[{"tool":"read_calendar","args":{}},{"tool":"read_todo_list","args":{}}]}'},
     {"role": "user", "content": OBSERVATION + '{"read_calendar":{"weekly_events":[]},"read_todo_list":{"pending_tasks":[],"completed_tasks":[]}}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged ebay.com 1x at 10:00 (check in 10 min)."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged ebay.com 1x at 10:00 (check in 10 min)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"ebay.com","message":"Just browsing turns into an hour and a cart you regret. Close this and give twenty minutes to the coursework first - I will look again.","callback":600}'},
 
     # 2b. Lock on first contact. 
     {"role": "user", "content": "crunchyroll.com... i know i know, exam in an hour"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 4 hours\n- Entertainment: 1 hour\n[Current Activity]\n- Locked crunchyroll.com (exam in an hour) at 16:00."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 4 hours\n- Errands: 0 mins\n- Entertainment: 1 hour\n[Current Activity]\n- Locked crunchyroll.com (exam in an hour) at 16:00."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"crunchyroll.com","message":"An hour before the exam is not the moment. Closing this one - the notes, now. You will thank yourself at the exam."}'},
 
@@ -334,13 +335,13 @@ FEW_SHOT = [
     {"role": "user", "content": "Opened facebook.com"},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"read_calendar","args":{}}'},
     {"role": "user", "content": OBSERVATION + '{"weekly_events":[{"title":"Maman 16","due":"tonight at midnight"}]}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 2 hours\n- Entertainment: 0 mins\n[Current Activity]\n- Locked facebook.com at 19:00 (Maman 16 due tonight)."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 2 hours\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Locked facebook.com at 19:00 (Maman 16 due tonight)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"facebook.com","message":"Maman 16 is due tonight at midnight! I am blocking Facebook entirely. Go finish the assignment."}'},
 
     # 3. A wake at a single nudge. 
     {"role": "user", "content": "Waking up - you asked to check back.\n"
-                                "(Your short memory at this point read: \"[Cumulative Today]\n- Study: 1 hour\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged reddit.com 1x at 16:04 (check in 10 min).\")"},
+                                "(Your short memory at this point read: \"[Cumulative Today]\n- Study: 1 hour\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged reddit.com 1x at 16:04 (check in 10 min).\")"},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 1 hour\n- Entertainment: 10 mins\n[Current Activity]\n- Nudged reddit.com 2x at 16:14 (check in 10 min, lock if unchanged)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"reddit.com","message":"Still here. Please open the notes and give it ten minutes. I will check on you again.","callback":600}'},
@@ -356,7 +357,7 @@ FEW_SHOT = [
 
     # 5. What a person actually types:
     {"role": "user", "content": "im on https://www.Pinterest.com/search/pins/?q=desk%20setup lol"},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged pinterest.com 1x at 15:20 (callback 15:30)."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 0 mins\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Nudged pinterest.com 1x at 15:20 (callback 15:30)."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"Desk setup inspiration is a 40-minute hole. Close this and give ten minutes to the notes first. I will check in.","callback":600}'},
 
@@ -380,7 +381,7 @@ FEW_SHOT = [
     {"role": "user", "content": OBSERVATION + '{"pending_tasks":["ממן 16 - שאלה 3 ו-4"],"completed_tasks":[]}'},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"update_todo_status","args":{"task_name":"ממן 16 - שאלה 3 ו-4","status":"completed"}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
-    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 2 hours\n- Entertainment: 0 mins\n[Current Activity]\n- Finished Maman 16 at 15:30."}}'},
+    {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"[Cumulative Today]\n- Study: 2 hours\n- Errands: 0 mins\n- Entertainment: 0 mins\n[Current Activity]\n- Finished Maman 16 at 15:30."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"error","message":"Great job finishing Maman 16! I marked it complete. What are you opening next?"}'},
 
