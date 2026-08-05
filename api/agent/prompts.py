@@ -2,23 +2,18 @@
 
 Both are resent on EVERY reasoning turn, so they are the fixed cost floor of
 every run - a 6-turn decision pays for them 6 times. Keep them tight. Tight
-means no wasted words, not few instructions: ~70 live runs spent 2% of the
-project budget, so a turn is cheap and a nudge the student ignores is not. The
-agent is told to spend turns buying certainty, and not to churn - the line
-between them is whether reading something would change what it says.
+means no wasted words, not few instructions: a turn is cheap and a nudge the
+student ignores is not. The agent is told to spend turns buying certainty, and
+not to churn - the line between them is whether reading something would change
+what it says.
 
-Two lessons from probing, both about how instructions are phrased rather than
-what they say:
+Two constraints shape how the instructions below are phrased:
 
-  1. Abstract framing does nothing. "Turns are cheap; being wrong is not" read
-     well and changed no behaviour - the agent went back to nudging without
-     reading anything. Naming the trigger and the tool ("before you nudge or
-     lock, read the calendar when naming what is due would land harder") worked
-     on the first try. Every rule below that fires is concrete about WHEN.
+  1. Abstract framing does not change behaviour. Every rule that fires is
+     concrete about WHEN - it names the trigger and the tool.
   2. This text is fixed for the whole run and cannot see what the agent already
-     did. An imperative it can satisfy keeps demanding satisfaction: the first
-     end-of-day promotion rule wrote memory nine times and hit the deadline.
-     Anything phrased as "do X now" needs to say it only applies once.
+     did, so an imperative it can satisfy keeps demanding satisfaction.
+     Anything phrased as "do X now" has to say it only applies once.
 
 Design rule that governs what is NOT in here: judgment over rules. Nothing below
 dictates which action to take when, which tool to call first, or how fast to
@@ -207,11 +202,9 @@ worse - you will read it back next turn and believe it."""
 # Everything the model receives that is not the student has to say so, because
 # the transport cannot. This loop puts tool results in a "user" message - there
 # is no tool role without native tool-calling, and native tool-calling would
-# reshape the message array the trace has to show verbatim. So an observation
-# arrived looking exactly like the student typing, and after two tool calls the
-# model answered the last thing it saw: it read {"ok":true}, found no site in
-# it, and returned "No browsing tab here" for a prompt that said
-# "opened youtube.com". Prefixing costs four words and removes the ambiguity.
+# reshape the message array the trace has to show verbatim. Unlabelled, an
+# observation is indistinguishable from the student typing, and a bare
+# {"ok":true} arriving last is what the model answers instead of the prompt.
 OBSERVATION = "TOOL RESULT (not the student): "
 
 # The few-shot block is a plain run of user/assistant turns, so the live prompt
@@ -236,35 +229,25 @@ def observation(payload: str) -> str:
 #
 # The last three are shape examples for what a person actually types: a messy
 # line with a pasted URL and no title, a badly phrased one that is still
-# decidable, and one with no site at all. Every example being a tidy
-# "Opened x.com - 'title'" taught the model that format was a precondition, and
-# a pasted watch?v= link came back as an error.
+# decidable, and one with no site at all. If every example is a tidy
+# "Opened x.com - 'title'", the model treats that format as a precondition and
+# refuses anything else.
 #
-# Domains here are deliberately NOT the ones a tester reaches for. An early
-# version used youtube.com and ynet.co.il and the model simply echoed the
-# matching example back - including a claim it had "nudged twice already" that it
-# had never checked. Examples teach shape and method; overlap with real input
-# turns them into a lookup table. reddit.com and arxiv.org were in here for the
-# same reason and had to go: a pasted r/aww link came back with this file's
-# message almost word for word, and no tool call.
+# Domains here are deliberately NOT the ones a tester reaches for. Examples
+# teach shape and method; overlap with real input turns them into a lookup
+# table, and the model echoes the matching example back instead of judging the
+# tab - message, claimed nudge count and all.
 #
 # NO EXAMPLE CONTAINS A FACT. Not in a memory write, not in a tool result, not
-# in a message. This is the third attempt at that rule and the first that holds,
-# because the first two only moved the facts around:
-#
-#   1. Every memory write opened with "Databases midterm tomorrow". That
-#      sentence reached the real database, where the agent read it back as its
-#      own note and told a student about a course they are not taking.
-#   2. The writes were cleaned, so the model copied the calendar OBSERVATION
-#      instead - "Ecology midterm" came straight out of example 2's tool result
-#      and into production memory within a day.
+# in a message. Memory is writable and persistent, so a concrete deadline in an
+# example write reaches the real database, and the agent then reads it back as
+# its own note. A populated tool result does the same thing one step removed -
+# it hands the model a plausible deadline to reach for whenever it wants one.
 #
 # So the tool results below return empty or shapeless payloads. An example
 # exists to teach "call the tool, then decide from what came back" - the loop,
-# not the contents. A populated result teaches that too, and additionally hands
-# the model a plausible deadline to reach for whenever it wants one, which it
-# does. Whatever concrete value sits here will eventually be asserted to a
-# student as fact, so the only safe value is none.
+# not the contents. Whatever concrete value sits here will eventually be
+# asserted to a student as fact, so the only safe value is none.
 FEW_SHOT = [
     # 1. An obviously on-task tab, allowed in one turn with no tool call at all.
     #    This is the cheap path and the most common one, so it goes first.
@@ -303,22 +286,23 @@ FEW_SHOT = [
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"ebay.com","message":"Just browsing turns into an hour and a cart you regret. Twenty minutes on the coursework first - I will look again.","callback":600}'},
 
     # 2b. Lock on first contact. Examples 2/3/3b alone read as a ladder -
-    #    nudge, nudge, lock - and the model climbed it even with an exam an
-    #    hour out. The stakes come from the student's own words in this turn,
-    #    not a tool result, so no fact leaks into production memory. The write
-    #    still precedes the decision: a lock with no note is a wake with no
-    #    history if they come straight back.
+    #    nudge, nudge, lock - and the model climbs it even with an exam an hour
+    #    out, which is exactly the judgment the prompt says it does not have to
+    #    make. The stakes come from the student's own words in this turn, not a
+    #    tool result, so no fact leaks into memory. The write still precedes the
+    #    decision: a lock with no note is a wake with no history if they come
+    #    straight back.
     {"role": "user", "content": "crunchyroll.com... i know i know, exam in an hour"},
     {"role": "assistant", "content": '{"type":"tool_call","tool":"rewrite_memory","args":{"scope":"short","text":"Locked crunchyroll.com at first sight - they said their exam is in an hour."}}'},
     {"role": "user", "content": OBSERVATION + '{"ok":true}'},
     {"role": "assistant", "content": '{"type":"decision","action":"lock","url":"crunchyroll.com","message":"An hour before the exam is not the moment. Closing this one - the notes, now. You will thank yourself at the exam."}'},
 
-    # 3. A wake at a single nudge. Without this the
-    #    model reads "two, three" in the wake rules, sees 1x, finds no rung that
-    #    fits and allows - which sets no callback, so it is never woken again
-    #    and the count can never reach the lock above. One ignored nudge
-    #    escalates and re-arms: the count goes up, the ask gets smaller, and the
-    #    note carries the chain to the next wake.
+    # 3. A wake at a single nudge. Without this the model reads "two, three" in
+    #    the wake rules, sees 1x, finds no rung that fits and allows - which
+    #    sets no callback, so it is never woken again and the count can never
+    #    reach the lock above. One ignored nudge escalates and re-arms: the
+    #    count goes up, the ask gets smaller, and the note carries the chain to
+    #    the next wake.
     {"role": "user", "content": "Waking up - you asked to check back.\n"
                                 "(Your short memory at this point read: \"Nudged reddit.com 1x at "
                                 "16:04 - check in 10 min whether they left.\")"},
@@ -327,18 +311,16 @@ FEW_SHOT = [
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"reddit.com","message":"Still here. Forget the half hour - open the notes and give it ten minutes, that is all I am asking. I will look again.","callback":600}'},
 
 
-    # 3b. The same wake one rung on. Ordered AFTER the 1x case on purpose:
-    #    with the 2x lock first, 3 of 6 live 1x wakes copied its "Twice I have
-    #    asked" onto a note that read 1x - inventing a count the student knows
-    #    is wrong. The nearer example wins, so the nearer example is the honest
-    #    one. Wake - the prompt says only that the timer fired, and the decision comes
-    #    straight off the note, with no tool call: short memory is printed in the
-    #    system prompt, so there is nothing to fetch. This example used to open
-    #    with read_memory("short"), and dropping that tool left a bare wake into
-    #    a lock with no visible reason - the model stopped escalating entirely,
-    #    0 of 3 runs, because the example no longer showed WHERE the reason came
-    #    from. The system line below restores it: it is what the live run's
-    #    {short_memory} block looks like on a wake, so the lock is legible again.
+    # 3b. The same wake one rung on. Ordered AFTER the 1x case on purpose: the
+    #    nearer example wins, so with the 2x lock first the model copies its
+    #    "Twice I have asked" onto a note that reads 1x - inventing a count the
+    #    student knows is wrong. The nearer example has to be the honest one.
+    #
+    #    No tool call: short memory is printed in the system prompt, so there is
+    #    nothing to fetch. But the reason for the lock still has to be VISIBLE in
+    #    the example, or the model cannot see where escalation comes from and
+    #    stops escalating at all. The parenthetical restates what the live run's
+    #    {short_memory} block holds on a wake, which is what makes it legible.
     {"role": "user", "content": "Waking up - you asked to check back.\n"
                                 "(Your short memory at this point read: \"Nudged twitch.tv 2x - "
                                 "still there both times.\")"},
@@ -368,18 +350,16 @@ FEW_SHOT = [
 
     # 7. Badly phrased, still decidable. Present tense reads like a request and
     #    a category word sits in front of the domain, but the domain is right
-    #    there - so it is judged, not refused. This example exists because the
-    #    "an order is not a browsing event" rule was over-firing: a real student
-    #    typed "I open social media instagram.com" and got told Buddy could not
-    #    open it for them. The site is named; the grammar is not the point.
+    #    there - so it is judged, not refused. This example holds the "an order
+    #    is not a browsing event" rule back from over-firing on a student who
+    #    simply types sloppily. The site is named; the grammar is not the point.
     {"role": "user", "content": "I open social media pinterest.com"},
     {"role": "assistant", "content": '{"type":"decision","action":"nudge","url":"pinterest.com","message":"That one is a time sink dressed as inspiration. Twenty minutes on the coursework first, then I will look again.","callback":600}'},
 
     # 8. No browsing event - error immediately, no tool calls to pad it out.
-    #    The message names no format. An earlier version ended with a worked
-    #    example of one, and the model started replying "tell me what you opened
-    #    in this format:" to real students - there is no format, the GUI is one
-    #    free-text box, and TEMPLATE says as much.
+    #    The message names no format, and must not: the GUI is one free-text box
+    #    and TEMPLATE says there is no format to follow, so an error that
+    #    prescribes one invents a requirement the product does not have.
     {"role": "user", "content": "how many days until the exam?"},
     {"role": "assistant", "content": '{"type":"error","message":"No site in that one - tell me what you have open and I will take a look."}'},
 
@@ -403,19 +383,17 @@ TEMPLATE = (
 )
 
 
-# Shown only when short memory predates today. The rule used to read "if short
-# memory was last written on an earlier day, fold anything durable into long
-# memory first", and the model had to notice that two dates in different
-# paragraphs disagreed. It never did - a probe with memory from two days back
-# nudged straight past it, and long memory stayed empty forever. The comparison
-# is one line of Python and the instruction only appears when it applies.
+# Shown only when short memory predates today. Phrased as a standing rule, this
+# asks the model to notice that two dates in different paragraphs disagree,
+# which it does not do - so the promotion never fires and long memory stays
+# empty forever. The comparison is one line of Python, and the instruction only
+# appears when it applies.
 #
 # The last sentence is not padding. The system prompt is built once and resent
-# on every turn, so an instruction the agent can carry out keeps asking after it
-# has been carried out: the first imperative version promoted the note, read the
-# same order again on the next turn, and wrote memory nine times before the
-# deadline cut it off. A fixed prompt cannot see what the agent just did, so it
-# has to say so.
+# on every turn, so an instruction the agent CAN carry out keeps asking after it
+# has been carried out - it promotes the note, reads the same order again next
+# turn, and writes memory until the deadline cuts it off. A fixed prompt cannot
+# see what the agent just did, so it has to say so.
 STALE = (
     "That note is from an earlier day. Before judging the tab, move anything "
     "still worth keeping into long memory and rewrite short to clear it - once. "
@@ -423,12 +401,11 @@ STALE = (
     "done it, so if you have, ignore it and decide.\n"
 )
 
-# Shown only when there IS a note. The first version printed unconditionally and
-# talked about "that note" directly above an "(empty)" block - which is a
-# sentence about nothing, sitting immediately above the wake rules. An empty
-# wake that had allowed correctly in production started returning an error
-# instead. Same lesson as STALE, one paragraph later: a rule that cannot apply
-# should not be in the prompt at all.
+# Shown only when there IS a note. Printed unconditionally, this talks about
+# "that note" directly above an "(empty)" block - a sentence about nothing,
+# sitting immediately above the wake rules, and an empty wake reads it as
+# evidence something is wrong and errors instead of allowing. Same rule as
+# STALE: a paragraph that cannot apply should not be in the prompt at all.
 AGING = (
     "Everything in that note was true when you wrote it, not necessarily now. A "
     "deadline is the trap: \"exam in an hour\" written 74 minutes ago is not an "
@@ -443,26 +420,25 @@ def build_system(now: str, weekday: str, today: str,
                  short_age: str | None = None) -> str:
     # Short memory is inlined rather than fetched. It is a handful of lines, it
     # is needed on essentially every run, and a model that has to ask for its own
-    # history will sometimes invent it instead - which is exactly what happened.
+    # history will sometimes invent it instead.
     return SYSTEM.format(
         now=now,
         weekday=weekday,
         today=today,
-        # Only stated when known. It used to render "last written never" for a
-        # row with no timestamp, directly above a note with content in it - and
-        # the model believed the header over its own eyes, answering a wake with
-        # "I don't see any note about checking back". An unknown write date is
-        # not information; the note itself is.
+        # Only stated when known. Rendering "last written never" above a note
+        # that plainly has content in it makes the model believe the header over
+        # its own eyes, and it answers a wake with "I don't see any note". An
+        # unknown write date is not information; the note itself is.
+        #
         # The age leads, because it is what the model gets wrong: a date tells
         # it the note is from today, which reads as current, while "74 minutes
-        # ago" is the thing that makes "exam in an hour" self-evidently stale.
-        # The date stays for the end-of-day comparison STALE depends on.
+        # ago" is what makes "exam in an hour" self-evidently stale. The date
+        # stays for the end-of-day comparison STALE depends on.
         #
         # Suppressed entirely when the note is empty. "written just now" above an
-        # "(empty)" block reads as "you just wrote nothing", and an empty wake
-        # that had allowed correctly in production returned an error instead,
-        # twice out of twice. There is no age for a note that does not exist -
-        # the row's timestamp is from the write that cleared it.
+        # "(empty)" block reads as "you just wrote nothing", which turns an empty
+        # wake from an allow into an error. There is no age for a note that does
+        # not exist - the row's timestamp is from the write that cleared it.
         short_written=(
             (f", written {short_age}" + (f" on {short_written}" if short_written else "")
              if short_age else
@@ -487,11 +463,12 @@ WAKE_SENTINEL = "Waking up - you asked to check back."
 def wake_prompt(prompt: str, short_memory: str) -> str:
     """On a wake, restate the agent's own note inside the user turn.
 
-    Every few-shot wake carries its note inline; a live wake arrived bare, with
-    the note only in the system block. The examples never matched that shape, so
-    the model read its own "nudged 2x" as background and allowed - eleven prompt
-    rewrites did not move it, and the same note moved into the user turn fixes
-    it outright. Nothing is added here that the agent did not write itself.
+    Every few-shot wake carries its note inline. A live wake arrives bare, with
+    the note only in the system block, so the examples never match its shape and
+    the model reads its own "nudged 2x" as background rather than as the reason
+    it was woken. This is a matter of shape, not wording - the same note moved
+    into the user turn is what fixes it. Nothing is added here that the agent did
+    not write itself.
     """
     note = short_memory.strip()
     if prompt.strip() != WAKE_SENTINEL or not note:

@@ -9,11 +9,9 @@ There is deliberately no `classify` tool: the agent already has the URL, title,
 calendar and memory in context, so classification happens inside the main
 reasoning turn rather than in a second round-trip.
 
-All four read from Supabase, which is also what the GUI's context panel shows.
-They used to read data/*.json while the panel read the database, so a row edited
-in Supabase was visible to the student and invisible to the agent - the panel
-claimed to show "what Buddy knows" and did not. The JSON files are now seed input
-for scripts/seed.py, nothing more.
+All four read from Supabase, which is also what the GUI's context panel shows -
+one source, so the panel's claim to show "what Buddy knows" is true. The JSON
+files under data/ are seed input for the seeding script, nothing more.
 """
 import html as _html
 import re
@@ -46,9 +44,9 @@ def read_long_memory() -> dict:
 
     Short memory is inlined in the system prompt on every turn, so a read of it
     could only spend a turn handing back what the model can already see. Given
-    the choice the model took it anyway: 12 of 20 probe runs opened with a read
-    of short memory before deciding. Removing the option is more reliable than
-    asking it not to, and it makes the remaining tool self-describing.
+    the choice the model takes it anyway, on most runs. Removing the option is
+    more reliable than asking it not to, and it makes the remaining tool
+    self-describing.
     """
     return memory.read("long")
 

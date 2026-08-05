@@ -27,9 +27,9 @@ def invoke(messages: list[dict]) -> str:
     it, so the caller must still handle prose. Servers that reject the field
     outright get one retry without it.
     """
-    # No temperature. It was 0.3 - low, to keep the JSON shape stable - but the
-    # gpt-5 family accepts only the default and rejects the field outright, so
-    # sending it turned every production call into a 400. The default it is.
+    # No temperature. A low one keeps the JSON shape stable, but the gpt-5
+    # family accepts only the default and rejects the field outright, so sending
+    # it makes every call a 400. The default it is.
     body = {
         "model": MODEL,
         "messages": messages,
@@ -51,7 +51,7 @@ def invoke(messages: list[dict]) -> str:
             r = post()
         # The server's own words, not just the status line. A 400 saying which
         # parameter it rejected is the whole diagnosis; "400 Bad Request" alone
-        # sent us hunting through the key and the model name for it.
+        # leaves the key and the model name equally suspect.
         if not r.ok:
             raise LLMError(f"LLM request failed: {r.status_code} - {r.text[:300]}")
         return r.json()["choices"][0]["message"]["content"] or ""

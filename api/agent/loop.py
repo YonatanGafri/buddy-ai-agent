@@ -82,8 +82,7 @@ def _bad_url(reply: dict) -> str | None:
 
     A nudge and a lock both render a browser tab in the GUI built from this
     field, so a value that is not a site draws a tab for a place that does not
-    exist. Live runs returned action:"nudge" with url:"calendar", and another
-    with url:"" - one drew a tab called "calendar", the other an empty one.
+    exist - url:"calendar" draws a tab called "calendar", url:"" an empty one.
 
     Deliberately NOT a parser. It answers "is this string a domain", never
     "which domain did the student mean" - working that out from free text is the
@@ -136,10 +135,10 @@ def _clean_decision(reply: dict) -> dict:
 def _wrote_short(steps: list, url: str) -> bool:
     """Did this run leave itself a note in short memory ABOUT THIS SITE?
 
-    Any short write used to count, so a housekeeping write early in the run
-    (stale-day cleanup, say) satisfied the check and the wake then read a note
-    that never mentioned the site being nudged. Requiring the judged domain in
-    the text closes that; with no url, any non-empty write still counts.
+    The domain has to appear in the text. Counting any short write lets a
+    housekeeping one early in the run - a stale-day cleanup, say - satisfy the
+    check, and the wake then reads a note that never mentions the site being
+    nudged. With no url, any non-empty write still counts.
     """
     domain = (url or "").strip().lower()
     for s in steps:
@@ -157,22 +156,18 @@ def _ensure_short_note(decision: dict, steps: list, short_before: str) -> list:
     """Arming a callback with nothing written is a follow-up aimed at nothing.
 
     A wake is told only that the timer fired - never which site it was for. The
-    note in short memory is the entire briefing, and the prompt says so at
-    length. In production it got written on half the nudges: 5 of 10 set a
-    callback and wrote nothing. That is not a cosmetic miss. One measured run
-    nudged twitter.com, wrote no note, and when its callback fired the agent
-    read the PREVIOUS site's leftover note and followed up about wikipedia.org -
-    a site the student had already left. The chain does not just go quiet, it
-    reattaches to the wrong tab, which is worse than silence.
+    note in short memory is the entire briefing. Without one the chain does not
+    just go quiet: the wake reads whatever note was left over from a previous
+    run and follows up about a site the student has already left, which is worse
+    than silence.
 
-    Rewriting the prompt is the move that has already failed here - this exact
-    instruction is spelled out with reasons and it still lands about half the
-    time. So this is enforced where it is deterministic instead. What is written
-    is only what the loop watched happen: the action, the domain the agent
-    itself returned, and the delay it chose. No count, because the honest count
-    lives in the note the agent did not write, and inventing "nudged 1x" over an
-    unknown history is the same lie the prompt warns about. No deadline, no task
-    - nothing that would need a tool read to be true.
+    The prompt already asks for this at length and it still lands about half the
+    time, so it is enforced here, where it is deterministic. What gets written is
+    only what the loop watched happen: the action, the domain the agent itself
+    returned, and the delay it chose. No count - the honest count lives in the
+    note the agent did not write, and inventing "nudged 1x" over an unknown
+    history is the same fabrication the prompt warns against. No deadline, no
+    task, nothing that would need a tool read to be true.
 
     Deliberately narrow. It fires only when a callback is armed AND nothing was
     written, so an agent that keeps its own books is never touched, and a
@@ -232,11 +227,10 @@ def run(prompt: str) -> tuple[dict, list]:
     #
     # One exception, and it is not student text: the wake sentinel below is a
     # fixed string the client sends itself, so matching it is not classification.
-    # A bare wake was allowed even at "nudged 2x" through eleven prompt rewrites.
-    # The cause is shape, not wording - every few-shot wake carries its note
-    # INSIDE the user turn, while the live wake arrived bare with the note only
-    # up in the system block, so the examples never matched and the model read
-    # the note as background. Same note, moved into the user turn, escalates.
+    # A bare wake is allowed even at "nudged 2x", and the cause is shape rather
+    # than wording - every few-shot wake carries its note INSIDE the user turn,
+    # while a live wake arrives bare with the note only up in the system block,
+    # so the examples never match and the model reads the note as background.
     # This does not tell the agent anything it did not write itself.
     messages = (
         [{"role": "system", "content": system}]
@@ -330,9 +324,9 @@ def run(prompt: str) -> tuple[dict, list]:
 
         # Labelled, because the role cannot distinguish it. A tool result and the
         # student both arrive as "user" - so an unlabelled {"ok":true} is the
-        # last thing the model sees, and it answers that instead of the prompt.
-        # One live trace returned "No browsing tab here" for a prompt reading
-        # "opened youtube.com": two writes had buried it under two bare acks.
+        # last thing the model sees, and it answers that instead of the prompt:
+        # two writes are enough to bury "opened youtube.com" under two bare acks
+        # and get back "No browsing tab here".
         #
         # A batch comes back as ONE observation keyed by tool name. Separate
         # user turns per result would be indistinguishable from the student
