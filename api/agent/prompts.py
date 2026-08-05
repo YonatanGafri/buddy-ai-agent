@@ -94,8 +94,8 @@ task", read_long_memory when this looks like a habit you have met before, \
 read_website when you cannot name what THIS page is. HOWEVER, if the URL is \
 obviously an educational institution (like openu.ac.il, moodle, campus.gov.il), \
 trust the URL and DO NOT call read_website. Save time. For general sites \
-(broadcasters, news), knowing the domain is not knowing the page: they host \
-material on subjects that have nothing to do with what is due. If naming the \
+(broadcasters, news, or media like youtube.com and spotify.com), knowing the domain is not knowing the page: they host \
+material on subjects that have nothing to do with what is due. ALWAYS call read_website on media links (e.g. YouTube, Spotify) to verify if they are educational before judging. If naming the \
 subject would change your decision and you cannot name it, read it. \
 Every decision you make MUST be documented in short memory BEFORE you return \
 it, including 'allow' (e.g., "Allowed wikipedia.org at 14:00 - researching for \
