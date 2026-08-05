@@ -144,9 +144,9 @@ def age_of(stamp: str | None) -> str | None:
     Computed here rather than left to the model, for the same reason day_of is:
     the agent writes clock times into its own notes ("Locked netflix.com at
     20:25") and `now` is printed at the top of every prompt, so everything
-    needed to notice an hour has passed is already in front of it. It does not
-    do the subtraction. A note reading "exam in an hour" was read back 65
-    minutes later and asserted to a student opening an unrelated site.
+    needed to notice an hour has passed is already in front of it - and it still
+    does not do the subtraction. A note reading "exam in an hour" is otherwise
+    read back an hour later and asserted to a student as current.
 
     One age for the whole note, because that is what the row stores - a rewrite
     restamps every line in it. The agent's own clock times inside the text are
