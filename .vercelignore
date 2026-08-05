@@ -1,4 +1,5 @@
 # keep the function bundle small - none of this is needed at runtime
 private/
 supabase/
+gui-src/
 .DS_Store

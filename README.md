@@ -98,6 +98,7 @@ api/agent/tools.py   the five tools
 api/agent/memory.py  Supabase reads and writes
 api/agent/llm.py     OpenAI-compatible chat completions
 public/index.html    the GUI, a single self-contained bundle
+gui-src/*.jsx        the GUI's real source - edit here, not in the bundle
 data/                seed data, the architecture diagram, recorded examples
 supabase/schema.sql  the three tables
 ```
@@ -106,6 +107,35 @@ supabase/schema.sql  the three tables
 seed input for Supabase, not what the agent reads at runtime - it reads the
 database. `data/agent_examples.json` holds the recorded runs `/api/agent_info`
 returns.
+
+## Editing the GUI
+
+`public/index.html` is generated, not written. It is one file with its JS
+modules gzipped and base64'd inside a `<script type="__bundler/manifest">` blob,
+so `grep` finds nothing in it and a hand edit is not reviewable.
+
+The two modules we own are checked in as real files. Edit those and rebuild:
+
+```bash
+# edit gui-src/app.jsx or gui-src/data.jsx
+python3 gui-src/build.py
+```
+
+| File | What |
+| --- | --- |
+| `gui-src/app.jsx` | The React app - layout, the decision log, the context panel |
+| `gui-src/data.jsx` | Config, the Supabase context fetch, the `/api/execute` client |
+
+`build.py` replaces each module's payload in the manifest and leaves the
+vendored ones (React, Babel, the icon set) untouched. It is idempotent - running
+it twice produces a byte-identical file, so a no-op rebuild is not a diff.
+
+Commit `public/index.html` along with the source. It is what actually ships:
+Vercel serves the file, it is not built at deploy time. Forgetting the rebuild
+ships the old GUI silently.
+
+Styles live inside `app.jsx`, which mounts them itself - there is no separate
+stylesheet to edit.
 
 ## Endpoints
 
