@@ -102,6 +102,7 @@ To ensure the agent is both incredibly smart and cost-efficient (saving tokens a
 Please note that the **Simulate New Day** and **Wake Up** buttons visible in the GUI are **strictly for testing and grading purposes**. They are not part of the actual end-user product. 
 - **Simulate New Day** instantly advances the system's clock to trigger the overnight `STALE` memory synthesis.
 - **Wake Up** fires an immediate callback, mimicking the browser extension's background timer.
+- **Interactive To-Do List:** In the Agent Context panel, the To-Do list is fully interactive. You can click on any pending task to mark it as "Complete" on the fly, allowing you to instantly test how the agent reacts to fulfilled deadlines.
 
 *Design Note:* We initially planned to add a **Clear Memory** button (to easily wipe Short & Long memory so you could test the agent as a completely new user). However, we ultimately decided against it to avoid cluttering the GUI. To test a fresh user, you can simply clear the `memory` table in Supabase.
 
