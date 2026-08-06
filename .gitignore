@@ -6,3 +6,4 @@ __pycache__/
 
 # personal / course material / dev tooling - not part of the deliverable
 /private
+.env*

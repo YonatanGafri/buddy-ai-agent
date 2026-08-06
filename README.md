@@ -31,11 +31,12 @@ Four exits: a decision, an agent error (no browsing event in the prompt), a
 deadline forcing one summarizing turn, and a stuck-agent fallback that allows
 rather than hanging the browser.
 
-Five tools. Four read the same Supabase the GUI's context panel shows; the
-fifth reads the open web:
+Six tools. Five read or write the same Supabase the GUI's context panel shows;
+the sixth reads the open web:
 
 - `read_calendar()` - what is due, and when
 - `read_todo_list()` - what is pending and what is done
+- `update_todo_status(task_name, status)` - marks a task completed or pending
 - `read_long_memory()` - what survives past today
 - `rewrite_memory(scope, text)` - overwrites `short` or `long`
 - `read_website(url)` - the page's `<title>` and meta description, nothing more
@@ -103,8 +104,6 @@ To prove the agent's advanced reasoning capabilities and strict adherence to the
 1. **`test_results.md`**: A comprehensive testing report detailing how the agent handled 3 distinct personas (The Procrastinator, The Overachiever, and The Inconsistent Student). It proves the agent utilizes both short and long-term memory to make nuanced pedagogical decisions.
 2. **`raw_api_output.json`**: A raw JSON dump of a single API request/response cycle. This file validates that the API strictly follows the required format (`status`, `error`, `response`, and an array of `steps` detailing the `module`, `prompt`, and `response`).
 
-*(Note to Instructor: We recommend reviewing these files to see the full depth of the agent's logic and architecture compliance. We believe the implementation merits a score of 100/100 based on the advanced reasoning and adherence to specifications demonstrated in these tests.)*
-
 ## Testing & Simulation UI
 
 Please note that the **Simulate New Day** and **Wake Up** buttons visible in the GUI are **strictly for testing and grading purposes**. They are not part of the actual end-user product. 
@@ -117,10 +116,10 @@ Please note that the **Simulate New Day** and **Wake Up** buttons visible in the
 ## Layout
 
 ```
-api/index.py         the four endpoints (Vercel loads one top-level app)
+api/index.py         the four spec endpoints + GUI helper routes (Vercel loads one top-level app)
 api/agent/loop.py    the ReAct loop
 api/agent/prompts.py system prompt + few-shot examples
-api/agent/tools.py   the five tools
+api/agent/tools.py   the six tools
 api/agent/memory.py  Supabase reads and writes
 api/agent/llm.py     OpenAI-compatible chat completions
 public/index.html    the GUI, a single self-contained bundle
