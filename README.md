@@ -104,6 +104,12 @@ To prove the agent's advanced reasoning capabilities and strict adherence to the
 1. **`test_results.md`**: A comprehensive testing report detailing how the agent handled 3 distinct personas (The Procrastinator, The Overachiever, and The Inconsistent Student). It proves the agent utilizes both short and long-term memory to make nuanced pedagogical decisions.
 2. **`raw_api_output.json`**: A raw JSON dump of a single API request/response cycle. This file validates that the API strictly follows the required format (`status`, `error`, `response`, and an array of `steps` detailing the `module`, `prompt`, and `response`).
 
+### Architectural Note: Model Selection (Thinking vs. Standard Models)
+
+We noticed that the platform provides a "Thinking" model. While powerful, we strongly recommend switching to a fast, standard instruction-following model for this specific agent. 
+
+Our architecture already implements a strict, custom **ReAct (Reason + Act) loop** in Python. This loop acts as the agent's actual computational pipeline, forcing it to think step-by-step by requesting tools, reading their outputs, and evaluating the context dynamically. Using a "Thinking" model introduces redundant internal reasoning loops that significantly increase response latency without adding pedagogical value, since the rigorous reasoning structure is already enforced by our application code.
+
 ## Testing & Simulation UI
 
 Please note that the **Simulate New Day** and **Wake Up** buttons visible in the GUI are **strictly for testing and grading purposes**. They are not part of the actual end-user product. 
